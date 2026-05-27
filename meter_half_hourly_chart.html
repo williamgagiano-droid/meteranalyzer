@@ -15,41 +15,34 @@
     input[type="file"] { padding: 8px; margin-bottom: 10px; }
     button { background: #0066cc; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
     button:hover { background: #0052a3; }
-    
     .controls { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
     .control-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 15px; }
     .control-group { display: flex; gap: 10px; align-items: center; }
     .control-group label { font-size: 13px; font-weight: 500; min-width: 80px; }
     .control-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
-    
     .view-buttons { display: flex; gap: 8px; }
     .view-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; color: #666; }
     .view-btn.active { background: #0066cc; color: white; border-color: #0066cc; }
-    
     .chart-wrapper { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; overflow-x: auto; position: relative; }
-    svg { display: block; margin: 0 auto; }
-    
-    .tooltip { position: absolute; background: rgba(0,0,0,0.9); color: white; padding: 10px 14px; border-radius: 4px; font-size: 12px; pointer-events: none; z-index: 1000; white-space: nowrap; font-weight: 500; }
-    
+    svg { display: block; }
+    .tooltip { position: absolute; background: rgba(0,0,0,0.9); color: white; padding: 10px 14px; border-radius: 4px; font-size: 13px; pointer-events: none; z-index: 1000; white-space: nowrap; font-weight: 500; }
     .error { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px; }
-    
     .stats { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-top: 20px; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
     .stat-card { background: #f8f9fa; padding: 15px; border-radius: 6px; }
     .stat-label { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 6px; }
     .stat-value { font-size: 22px; font-weight: 600; color: #0066cc; }
     .stat-unit { font-size: 12px; color: #999; }
-    
     .legend { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
-    .legend-item { display: flex; gap: 8px; align-items: center; font-size: 13px; }
-    .legend-color { width: 16px; height: 16px; border-radius: 2px; }
+    .legend-item { display: flex; gap: 10px; align-items: center; font-size: 13px; }
+    .legend-dot { width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
       <h1>Half-Hourly Usage Flow Chart</h1>
-      <p style="color: #666;">Every 30-minute reading as individual bar - see consumption pattern throughout the day</p>
+      <p style="color: #666;">Every 30-minute reading as individual bar — scroll to see full day</p>
     </header>
 
     <div class="upload-section">
@@ -64,22 +57,18 @@
         <div class="control-row">
           <div class="control-group">
             <label>Meter:</label>
-            <select id="meterSelect" onchange="updateChart()">
-              <option value="">Loading...</option>
-            </select>
+            <select id="meterSelect" onchange="updateChart()"></select>
           </div>
-          
           <div class="control-group">
             <label>View:</label>
             <div class="view-buttons">
-              <button class="view-btn active" onclick="setTimeFrame('half-hour')">Half-hourly</button>
-              <button class="view-btn" onclick="setTimeFrame('morning')">Morning (6am-12pm)</button>
-              <button class="view-btn" onclick="setTimeFrame('afternoon')">Afternoon (12pm-6pm)</button>
-              <button class="view-btn" onclick="setTimeFrame('full-day')">Full Day</button>
+              <button class="view-btn active" onclick="setTimeFrame('half-hour', this)">Half-hourly</button>
+              <button class="view-btn" onclick="setTimeFrame('morning', this)">Morning (6am–12pm)</button>
+              <button class="view-btn" onclick="setTimeFrame('afternoon', this)">Afternoon (12pm–6pm)</button>
+              <button class="view-btn" onclick="setTimeFrame('full-day', this)">Full Day</button>
             </div>
           </div>
         </div>
-
         <div class="control-row">
           <div class="control-group">
             <label>Date:</label>
@@ -87,32 +76,24 @@
               <option value="">All Dates</option>
             </select>
           </div>
-
           <div class="control-group">
-            <label>
-              <input type="checkbox" id="showValues" onchange="updateChart()" checked />
-              Show values
-            </label>
+            <label><input type="checkbox" id="showValues" onchange="updateChart()" checked /> Show values</label>
           </div>
-
           <div class="control-group">
-            <label>
-              <input type="checkbox" id="showAvgLine" onchange="updateChart()" />
-              Show average line
-            </label>
+            <label><input type="checkbox" id="showAvgLine" onchange="updateChart()" /> Show average line</label>
           </div>
         </div>
       </div>
 
       <div class="legend">
-        <div class="legend-item">
-          <div class="legend-color" style="background: linear-gradient(to right, #1f77b4, #ff7f0e, #d62728, #2ca02c);"></div>
-          <span>Color gradient: Night → Morning → Afternoon → Evening</span>
-        </div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1f77b4;"></div> Night (00:00–06:00)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff7f0e;"></div> Morning (06:00–12:00)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d62728;"></div> Afternoon (12:00–18:00)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2ca02c;"></div> Evening (18:00–24:00)</div>
       </div>
 
       <div class="chart-wrapper">
-        <svg id="chart" width="100%" height="400" style="min-width: 600px;"></svg>
+        <svg id="chart"></svg>
       </div>
 
       <div class="stats">
@@ -121,498 +102,258 @@
     </div>
   </div>
 
-  <div class="tooltip" id="tooltip" style="display: none;"></div>
+  <div class="tooltip" id="tooltip" style="display:none;"></div>
 
   <script>
-    let allData = [];
-    let meterAnalysis = {};
-    let currentMeter = null;
-    let currentTimeFrame = 'half-hour';
+    let allData = [], meterAnalysis = {}, currentMeter = null, currentTimeFrame = 'half-hour';
 
     function loadData() {
       const file = document.getElementById('csvFile').files[0];
-      if (!file) {
-        showError('Please select a CSV file');
-        return;
-      }
-
+      if (!file) { showError('Please select a CSV file'); return; }
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const csv = e.target.result;
-          const lines = csv.trim().split('\n');
-          
+          const lines = e.target.result.trim().split('\n');
           const headers = lines[0].split(',').map(h => h.trim());
           const meterIdx = headers.indexOf('Meter Number');
           const registerIdx = headers.indexOf('Register');
           const dateIdx = headers.indexOf('Date');
           const readingIdx = headers.indexOf('Reading');
-
-          if (meterIdx === -1 || registerIdx === -1 || dateIdx === -1 || readingIdx === -1) {
-            showError('CSV must have columns: Meter Number, Register, Date, Reading');
-            return;
+          if ([meterIdx, registerIdx, dateIdx, readingIdx].includes(-1)) {
+            showError('CSV must have: Meter Number, Register, Date, Reading'); return;
           }
-
           allData = [];
           for (let i = 1; i < lines.length; i++) {
             if (!lines[i].trim()) continue;
             const parts = lines[i].split(',');
-            if (parts.length >= readingIdx + 1) {
-              allData.push({
-                'Meter Number': parts[meterIdx]?.trim(),
-                'Register': parts[registerIdx]?.trim(),
-                'Date': parts[dateIdx]?.trim(),
-                'Reading': parts[readingIdx]?.trim()
-              });
-            }
+            allData.push({
+              'Meter Number': parts[meterIdx]?.trim(),
+              'Register': parts[registerIdx]?.trim(),
+              'Date': parts[dateIdx]?.trim(),
+              'Reading': parts[readingIdx]?.trim()
+            });
           }
-
-          if (allData.length === 0) {
-            showError('No valid data found in CSV');
-            return;
-          }
-
+          if (!allData.length) { showError('No valid data found'); return; }
           analyzeData();
           populateMeterSelect();
           populateDateSelect();
           updateChart();
-          showContent();
-        } catch (error) {
-          showError('Error parsing CSV: ' + error.message);
-        }
+          document.getElementById('content').style.display = 'block';
+          document.getElementById('error').style.display = 'none';
+        } catch(err) { showError('Parse error: ' + err.message); }
       };
-
-      reader.onerror = () => {
-        showError('Error reading file');
-      };
-
       reader.readAsText(file);
     }
 
     function showError(msg) {
-      const errorDiv = document.getElementById('error');
-      errorDiv.textContent = msg;
-      errorDiv.style.display = 'block';
+      const el = document.getElementById('error');
+      el.textContent = msg; el.style.display = 'block';
     }
 
     function analyzeData() {
       const grouped = {};
-
       allData.forEach(row => {
         if (!row['Meter Number'] || !row['Register']) return;
         const key = `${row['Meter Number']}-${row['Register']}`;
-        if (!grouped[key]) {
-          grouped[key] = { 
-            number: row['Meter Number'], 
-            register: row['Register'],
-            readings: []
-          };
-        }
-        const reading = parseFloat(row['Reading']);
-        if (!isNaN(reading)) {
-          grouped[key].readings.push({
-            date: row['Date'],
-            value: reading
-          });
-        }
+        if (!grouped[key]) grouped[key] = { number: row['Meter Number'], register: row['Register'], readings: [] };
+        const val = parseFloat(row['Reading']);
+        if (!isNaN(val)) grouped[key].readings.push({ date: row['Date'], value: val });
       });
 
+      meterAnalysis = {};
       Object.keys(grouped).forEach(key => {
         const meter = grouped[key];
         const readings = meter.readings.sort((a, b) => new Date(a.date) - new Date(b.date));
-        
         const usage = [];
         for (let i = 1; i < readings.length; i++) {
           const diff = readings[i].value - readings[i-1].value;
-          usage.push({
-            timestamp: readings[i].date,
-            usage: Math.max(0, diff),
-            value: readings[i].value
-          });
+          usage.push({ timestamp: readings[i].date, usage: Math.max(0, diff) });
         }
-
         meterAnalysis[key] = {
           number: meter.number,
           register: meter.register,
           unit: meter.register === 'Energy' ? 'W' : 'L',
-          originalUnit: meter.register === 'Energy' ? 'kWh' : 'kL',
-          usage: usage.map(u => ({
-            ...u,
-            displayUsage: meter.register === 'Energy' 
-              ? (u.usage / 0.5) * 1000  // Convert kWh to watts: (kWh / 0.5 hours) * 1000 = average watts
-              : u.usage * 1000  // Convert kL to litres
-          }))
+          usage
         };
       });
-
       currentMeter = Object.keys(meterAnalysis)[0];
     }
 
     function populateMeterSelect() {
-      const select = document.getElementById('meterSelect');
-      select.innerHTML = '';
+      const sel = document.getElementById('meterSelect');
+      sel.innerHTML = '';
       Object.keys(meterAnalysis).forEach(key => {
-        const meter = meterAnalysis[key];
-        const option = document.createElement('option');
-        option.value = key;
-        option.textContent = `${meter.register} - ${meter.number}`;
-        select.appendChild(option);
+        const m = meterAnalysis[key];
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = `${m.register} - ${m.number}`;
+        sel.appendChild(opt);
       });
-      select.value = currentMeter;
+      sel.value = currentMeter;
     }
 
     function populateDateSelect() {
       const meter = meterAnalysis[currentMeter];
       if (!meter) return;
-
-      const dates = new Set();
-      meter.usage.forEach(u => {
-        const dateStr = u.timestamp.split(' ')[0];
-        dates.add(dateStr);
+      const dates = [...new Set(meter.usage.map(u => u.timestamp.split(' ')[0]))].sort();
+      const sel = document.getElementById('dateSelect');
+      sel.innerHTML = '<option value="">All Dates</option>';
+      dates.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d; opt.textContent = d;
+        sel.appendChild(opt);
       });
-
-      const select = document.getElementById('dateSelect');
-      const currentValue = select.value;
-      select.innerHTML = '<option value="">All Dates</option>';
-      
-      Array.from(dates).sort().forEach(date => {
-        const option = document.createElement('option');
-        option.value = date;
-        option.textContent = date;
-        select.appendChild(option);
-      });
-
-      select.value = currentValue;
     }
 
-    function setTimeFrame(frame) {
+    function setTimeFrame(frame, btn) {
       currentTimeFrame = frame;
-      document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       updateChart();
     }
 
-    function getTimeOfDay(hour) {
-      if (hour >= 0 && hour < 6) return 0; // Night (blue-ish)
-      if (hour >= 6 && hour < 12) return 1; // Morning (orange)
-      if (hour >= 12 && hour < 18) return 2; // Afternoon (red)
-      return 3; // Evening (green)
-    }
-
     function getBarColor(hour) {
-      const colors = ['#1f77b4', '#ff7f0e', '#d62728', '#2ca02c'];
-      return colors[getTimeOfDay(hour)];
-    }
-
-    function filterDataByTimeFrame(usage) {
-      if (currentTimeFrame === 'half-hour') return usage;
-      
-      return usage.filter(u => {
-        const dateObj = new Date(u.timestamp);
-        const hour = dateObj.getHours();
-        
-        if (currentTimeFrame === 'morning') return hour >= 6 && hour < 12;
-        if (currentTimeFrame === 'afternoon') return hour >= 12 && hour < 18;
-        return true; // full-day
-      });
-    }
-
-    function filterDataByDate(usage) {
-      const selectedDate = document.getElementById('dateSelect').value;
-      if (!selectedDate) return usage;
-      
-      return usage.filter(u => u.timestamp.startsWith(selectedDate));
+      if (hour < 6) return '#1f77b4';
+      if (hour < 12) return '#ff7f0e';
+      if (hour < 18) return '#d62728';
+      return '#2ca02c';
     }
 
     function updateChart() {
       const meterKey = document.getElementById('meterSelect').value;
       const meter = meterAnalysis[meterKey];
+      if (!meter) return;
       currentMeter = meterKey;
 
-      if (!meter || meter.usage.length === 0) return;
-
-      let filteredData = meter.usage;
-      filteredData = filterDataByDate(filteredData);
-      filteredData = filterDataByTimeFrame(filteredData);
-
-      if (filteredData.length === 0) {
-        showError('No data for selected filters');
-        return;
-      }
-
+      const selectedDate = document.getElementById('dateSelect').value;
       const showValues = document.getElementById('showValues').checked;
       const showAvgLine = document.getElementById('showAvgLine').checked;
 
-      // Convert data for display
-      const displayData = filteredData.map(d => ({
+      // Filter by date
+      let data = selectedDate ? meter.usage.filter(u => u.timestamp.startsWith(selectedDate)) : meter.usage;
+
+      // Filter by time frame
+      if (currentTimeFrame === 'morning') data = data.filter(u => { const h = new Date(u.timestamp).getHours(); return h >= 6 && h < 12; });
+      else if (currentTimeFrame === 'afternoon') data = data.filter(u => { const h = new Date(u.timestamp).getHours(); return h >= 12 && h < 18; });
+
+      if (!data.length) { showError('No data for selected filters'); return; }
+
+      // Convert units
+      const display = data.map(d => ({
         ...d,
-        displayUsage: meter.register === 'Energy' 
-          ? (d.usage / 0.5) * 1000  // Convert kWh to watts: (kWh / 0.5 hours) * 1000
-          : d.usage * 1000  // Convert kL to litres
+        val: meter.register === 'Energy' ? (d.usage / 0.5) * 1000 : d.usage * 1000
       }));
 
-      // Find max value
-      let maxValue = Math.max(...displayData.map(d => d.displayUsage));
+      const maxVal = Math.max(...display.map(d => d.val));
+      const avgVal = display.reduce((s, d) => s + d.val, 0) / display.length;
 
-      // SVG dimensions
-      const barWidth = Math.max(4, Math.min(12, 1000 / filteredData.length));
-      const barGap = 2;
-      const padding = { top: 50, right: 40, bottom: 60, left: 60 };
-      const chartWidth = filteredData.length * (barWidth + barGap) + padding.left + padding.right;
-      const chartHeight = 450;
-      const plotHeight = chartHeight - padding.top - padding.bottom;
+      // Sizing — each bar is minimum 35px wide, chart scrolls horizontally
+      const barW = Math.max(35, Math.floor(1500 / display.length));
+      const gap = 4;
+      const pad = { top: 50, right: 60, bottom: 70, left: 65 };
+      const chartW = display.length * (barW + gap) + pad.left + pad.right;
+      const chartH = 480;
+      const plotH = chartH - pad.top - pad.bottom;
 
-      // Create SVG
       const svg = document.getElementById('chart');
       svg.innerHTML = '';
-      svg.setAttribute('width', Math.max(1000, chartWidth));
-      svg.setAttribute('height', chartHeight);
+      svg.setAttribute('width', chartW);
+      svg.setAttribute('height', chartH);
 
-      // Helper to scale value
-      const scaleValue = (val) => (val / maxValue) * plotHeight;
+      const scaleY = v => (v / maxVal) * plotH;
+      const baseY = pad.top + plotH;
+      const ns = 'http://www.w3.org/2000/svg';
+      const el = (tag, attrs) => {
+        const e = document.createElementNS(ns, tag);
+        Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k, v));
+        return e;
+      };
 
-      // Y-axis
-      const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      // Grid + Y axis
       const yTicks = 5;
       for (let i = 0; i <= yTicks; i++) {
-        const y = padding.top + plotHeight - (plotHeight / yTicks) * i;
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', padding.left - 5);
-        line.setAttribute('x2', padding.left);
-        line.setAttribute('y1', y);
-        line.setAttribute('y2', y);
-        line.setAttribute('stroke', '#ddd');
-        yAxis.appendChild(line);
-
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.textContent = (maxValue * (i / yTicks)).toFixed(1);
-        text.setAttribute('x', padding.left - 10);
-        text.setAttribute('y', y + 4);
-        text.setAttribute('text-anchor', 'end');
-        text.setAttribute('font-size', '11px');
-        text.setAttribute('fill', '#666');
-        yAxis.appendChild(text);
+        const y = pad.top + plotH - (plotH / yTicks) * i;
+        const val = (maxVal * i / yTicks).toFixed(0);
+        svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: y, y2: y, stroke: '#e8e8e8', 'stroke-dasharray': '3,3' }));
+        svg.appendChild(el('line', { x1: pad.left - 5, x2: pad.left, y1: y, y2: y, stroke: '#999' }));
+        const t = el('text', { x: pad.left - 8, y: y + 4, 'text-anchor': 'end', 'font-size': '11', fill: '#666' });
+        t.textContent = val;
+        svg.appendChild(t);
       }
-      svg.appendChild(yAxis);
 
-      // Grid lines
-      for (let i = 0; i <= yTicks; i++) {
-        const y = padding.top + plotHeight - (plotHeight / yTicks) * i;
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', padding.left);
-        line.setAttribute('x2', Math.max(1000, chartWidth) - padding.right);
-        line.setAttribute('y1', y);
-        line.setAttribute('y2', y);
-        line.setAttribute('stroke', '#f0f0f0');
-        line.setAttribute('stroke-dasharray', '2,2');
-        svg.appendChild(line);
-      }
+      // Y axis label
+      const yLabel = el('text', { transform: 'rotate(-90)', x: -(pad.top + plotH/2), y: 16, 'text-anchor': 'middle', 'font-size': '12', fill: '#555', 'font-weight': '600' });
+      yLabel.textContent = `Usage (${meter.unit})`;
+      svg.appendChild(yLabel);
 
       // Bars
-      const baseY = padding.top + plotHeight;
-      displayData.forEach((d, i) => {
-        const dateObj = new Date(d.timestamp);
-        const hour = dateObj.getHours();
-        const minute = dateObj.getMinutes();
-        const x = padding.left + i * (barWidth + barGap);
-        const height = scaleValue(d.displayUsage);
+      display.forEach((d, i) => {
+        const dt = new Date(d.timestamp);
+        const h = dt.getHours(), m = dt.getMinutes();
+        const x = pad.left + i * (barW + gap);
+        const barH = Math.max(1, scaleY(d.val));
 
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', x);
-        rect.setAttribute('y', baseY - height);
-        rect.setAttribute('width', barWidth);
-        rect.setAttribute('height', height);
-        rect.setAttribute('fill', getBarColor(hour));
-        rect.setAttribute('opacity', '0.8');
-        rect.setAttribute('stroke', '#fff');
-        rect.setAttribute('stroke-width', '0.5');
-        rect.setAttribute('cursor', 'pointer');
+        const rect = el('rect', { x, y: baseY - barH, width: barW, height: barH, fill: getBarColor(h), opacity: '0.85', stroke: '#fff', 'stroke-width': '1', cursor: 'pointer', rx: '2' });
 
         rect.addEventListener('mouseenter', (e) => {
-          const tooltip = document.getElementById('tooltip');
-          const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-          tooltip.textContent = `${timeStr}: ${d.displayUsage.toFixed(1)} ${meter.unit}`;
-          tooltip.style.display = 'block';
-          tooltip.style.left = (e.pageX + 10) + 'px';
-          tooltip.style.top = (e.pageY - 30) + 'px';
+          const tip = document.getElementById('tooltip');
+          tip.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} — ${d.val.toFixed(0)} ${meter.unit}`;
+          tip.style.display = 'block';
+          tip.style.left = (e.pageX + 12) + 'px';
+          tip.style.top = (e.pageY - 36) + 'px';
         });
-
         rect.addEventListener('mousemove', (e) => {
-          const tooltip = document.getElementById('tooltip');
-          tooltip.style.left = (e.pageX + 10) + 'px';
-          tooltip.style.top = (e.pageY - 30) + 'px';
+          const tip = document.getElementById('tooltip');
+          tip.style.left = (e.pageX + 12) + 'px';
+          tip.style.top = (e.pageY - 36) + 'px';
         });
-
-        rect.addEventListener('mouseleave', () => {
-          document.getElementById('tooltip').style.display = 'none';
-        });
-
+        rect.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display = 'none'; });
         svg.appendChild(rect);
 
-        // Value label
-        if (showValues && height > 8) {
-          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-          text.textContent = d.displayUsage.toFixed(0);
-          text.setAttribute('x', x + barWidth / 2);
-          text.setAttribute('y', baseY - height - 2);
-          text.setAttribute('text-anchor', 'middle');
-          text.setAttribute('font-size', '8px');
-          text.setAttribute('fill', '#333');
-          text.setAttribute('font-weight', 'bold');
-          text.setAttribute('pointer-events', 'none');
-          svg.appendChild(text);
+        // Value on top
+        if (showValues && barH > 12) {
+          const t = el('text', { x: x + barW/2, y: baseY - barH - 4, 'text-anchor': 'middle', 'font-size': '10', fill: '#333', 'font-weight': '700', 'pointer-events': 'none' });
+          t.textContent = d.val.toFixed(0);
+          svg.appendChild(t);
         }
+
+        // X label — every bar gets a label, rotated so they don't overlap
+        const timeStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        const tl = el('text', { x: x + barW/2, y: baseY + 14, 'text-anchor': 'end', 'font-size': '11', fill: '#444', 'font-weight': '500', transform: `rotate(-45, ${x + barW/2}, ${baseY + 14})` });
+        tl.textContent = timeStr;
+        svg.appendChild(tl);
       });
+
+      // X axis line
+      svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: baseY, y2: baseY, stroke: '#333', 'stroke-width': '1' }));
 
       // Average line
       if (showAvgLine) {
-        const avgUsage = displayData.reduce((a, b) => a + b.displayUsage, 0) / displayData.length;
-        const avgY = baseY - scaleValue(avgUsage);
-
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', padding.left);
-        line.setAttribute('x2', Math.max(1000, chartWidth) - padding.right);
-        line.setAttribute('y1', avgY);
-        line.setAttribute('y2', avgY);
-        line.setAttribute('stroke', '#ff0000');
-        line.setAttribute('stroke-width', '2');
-        line.setAttribute('stroke-dasharray', '5,5');
-        svg.appendChild(line);
-
-        const avgLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        avgLabel.textContent = `Avg: ${avgUsage.toFixed(0)} ${meter.unit}`;
-        avgLabel.setAttribute('x', Math.max(1000, chartWidth) - padding.right - 5);
-        avgLabel.setAttribute('y', avgY - 8);
-        avgLabel.setAttribute('text-anchor', 'end');
-        avgLabel.setAttribute('font-size', '12px');
-        avgLabel.setAttribute('fill', '#ff0000');
-        avgLabel.setAttribute('font-weight', 'bold');
-        svg.appendChild(avgLabel);
+        const avgY = baseY - scaleY(avgVal);
+        svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: avgY, y2: avgY, stroke: '#e63946', 'stroke-width': '2', 'stroke-dasharray': '6,4' }));
+        const al = el('text', { x: chartW - pad.right - 6, y: avgY - 6, 'text-anchor': 'end', 'font-size': '12', fill: '#e63946', 'font-weight': '700' });
+        al.textContent = `Avg: ${avgVal.toFixed(0)} ${meter.unit}`;
+        svg.appendChild(al);
       }
 
-      // X-axis
-      const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      xAxis.setAttribute('x1', padding.left);
-      xAxis.setAttribute('x2', Math.max(1000, chartWidth) - padding.right);
-      xAxis.setAttribute('y1', baseY);
-      xAxis.setAttribute('y2', baseY);
-      xAxis.setAttribute('stroke', '#333');
-      xAxis.setAttribute('stroke-width', '1');
-      svg.appendChild(xAxis);
-
-      // X-axis labels (every 12 intervals, or less if fewer bars)
-      const labelInterval = Math.max(1, Math.floor(filteredData.length / 12));
-      filteredData.forEach((d, i) => {
-        if (i % labelInterval === 0) {
-          const dateObj = new Date(d.timestamp);
-          const hour = dateObj.getHours();
-          const minute = dateObj.getMinutes();
-          const x = padding.left + i * (barWidth + barGap) + barWidth / 2;
-
-          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-          text.textContent = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-          text.setAttribute('x', x);
-          text.setAttribute('y', baseY + 20);
-          text.setAttribute('text-anchor', 'middle');
-          text.setAttribute('font-size', '11px');
-          text.setAttribute('fill', '#666');
-          svg.appendChild(text);
-        }
-      });
-
-      // Y-axis label
-      const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      yLabel.textContent = `Usage (${meter.unit})`;
-      yLabel.setAttribute('x', -chartHeight / 2);
-      yLabel.setAttribute('y', 15);
-      yLabel.setAttribute('text-anchor', 'middle');
-      yLabel.setAttribute('font-size', '12px');
-      yLabel.setAttribute('fill', '#333');
-      yLabel.setAttribute('transform', 'rotate(-90)');
-      svg.appendChild(yLabel);
-
-      // X-axis label
-      const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      xLabel.textContent = 'Time (Half-hourly intervals)';
-      xLabel.setAttribute('x', (padding.left + Math.max(1000, chartWidth) - padding.right) / 2);
-      xLabel.setAttribute('y', chartHeight - 5);
-      xLabel.setAttribute('text-anchor', 'middle');
-      xLabel.setAttribute('font-size', '12px');
-      xLabel.setAttribute('fill', '#333');
-      svg.appendChild(xLabel);
-
-      // Title
-      const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      const frameLabel = { 'half-hour': 'Half-hourly', 'morning': 'Morning (6am-12pm)', 'afternoon': 'Afternoon (12pm-6pm)', 'full-day': 'Full Day' };
-      title.textContent = `${meter.register} Usage - ${frameLabel[currentTimeFrame]}`;
-      title.setAttribute('x', (padding.left + Math.max(1000, chartWidth) - padding.right) / 2);
-      title.setAttribute('y', 25);
-      title.setAttribute('text-anchor', 'middle');
-      title.setAttribute('font-size', '14px');
-      title.setAttribute('font-weight', 'bold');
-      title.setAttribute('fill', '#333');
+      // Chart title
+      const frameLabels = { 'half-hour': 'All Half-hourly Readings', morning: 'Morning (6am–12pm)', afternoon: 'Afternoon (12pm–6pm)', 'full-day': 'Full Day' };
+      const title = el('text', { x: pad.left + (chartW - pad.left - pad.right)/2, y: 28, 'text-anchor': 'middle', 'font-size': '15', 'font-weight': 'bold', fill: '#222' });
+      title.textContent = `${meter.register} (${meter.unit}) — ${frameLabels[currentTimeFrame]}${selectedDate ? ' — ' + selectedDate : ''}`;
       svg.appendChild(title);
 
-      // Update stats
-      updateStats(meter, filteredData);
-    }
-
-    function updateStats(meter, data) {
-      // Convert data for display
-      const displayData = data.map(d => ({
-        ...d,
-        displayUsage: meter.register === 'Energy' 
-          ? (d.usage / 0.5) * 1000  // Convert kWh to watts: (kWh / 0.5 hours) * 1000
-          : d.usage * 1000  // Convert kL to litres
-      }));
-
-      const totalUsage = displayData.reduce((a, b) => a + b.displayUsage, 0);
-      const avgUsage = totalUsage / displayData.length;
-      const maxUsage = Math.max(...displayData.map(d => d.displayUsage));
-      const minUsage = Math.min(...displayData.map(d => d.displayUsage));
-
-      const maxEntry = displayData.reduce((a, b) => a.displayUsage > b.displayUsage ? a : b);
+      // Stats
+      const maxEntry = display.reduce((a,b) => a.val > b.val ? a : b);
       const maxTime = new Date(maxEntry.timestamp);
-      const maxTimeStr = `${String(maxTime.getHours()).padStart(2, '0')}:${String(maxTime.getMinutes()).padStart(2, '0')}`;
-
-      const statsGrid = document.getElementById('statsGrid');
-      statsGrid.innerHTML = `
-        <div class="stat-card">
-          <div class="stat-label">Total Usage</div>
-          <div class="stat-value">${totalUsage.toFixed(0)}</div>
-          <div class="stat-unit">${meter.unit}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Average per Half-hour</div>
-          <div class="stat-value">${avgUsage.toFixed(0)}</div>
-          <div class="stat-unit">${meter.unit}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Peak Usage</div>
-          <div class="stat-value">${maxUsage.toFixed(0)}</div>
-          <div class="stat-unit">@ ${maxTimeStr}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Minimum Usage</div>
-          <div class="stat-value">${minUsage.toFixed(0)}</div>
-          <div class="stat-unit">${meter.unit}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Data Points</div>
-          <div class="stat-value">${data.length}</div>
-          <div class="stat-unit">half-hourly readings</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Peak / Average Ratio</div>
-          <div class="stat-value">${(maxUsage / avgUsage).toFixed(1)}x</div>
-          <div class="stat-unit">variability</div>
-        </div>
+      const maxTimeStr = `${String(maxTime.getHours()).padStart(2,'0')}:${String(maxTime.getMinutes()).padStart(2,'0')}`;
+      document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">${display.reduce((s,d)=>s+d.val,0).toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
+        <div class="stat-card"><div class="stat-label">Average / 30min</div><div class="stat-value">${avgVal.toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
+        <div class="stat-card"><div class="stat-label">Peak</div><div class="stat-value">${maxEntry.val.toFixed(0)}</div><div class="stat-unit">@ ${maxTimeStr}</div></div>
+        <div class="stat-card"><div class="stat-label">Minimum</div><div class="stat-value">${Math.min(...display.map(d=>d.val)).toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
+        <div class="stat-card"><div class="stat-label">Readings</div><div class="stat-value">${display.length}</div><div class="stat-unit">half-hourly</div></div>
+        <div class="stat-card"><div class="stat-label">Peak / Avg Ratio</div><div class="stat-value">${(maxEntry.val / avgVal).toFixed(1)}x</div><div class="stat-unit">variability</div></div>
       `;
-    }
-
-    function showContent() {
-      document.getElementById('content').style.display = 'block';
-      document.getElementById('error').style.display = 'none';
     }
   </script>
 </body>
