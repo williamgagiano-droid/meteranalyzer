@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Half-Hourly Meter Usage Chart</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    header { margin-bottom: 30px; }
+    h1 { font-size: 28px; margin-bottom: 8px; }
+    .upload-section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
+    .upload-label { display: block; margin-bottom: 10px; font-weight: 500; }
+    input[type="file"] { padding: 8px; margin-bottom: 10px; }
+    button { background: #0066cc; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
+    button:hover { background: #0052a3; }
+    
+    .controls { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
+    .control-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 15px; }
+    .control-group { display: flex; gap: 10px; align-items: center; }
+    .control-group label { font-size: 13px; font-weight: 500; min-width: 80px; }
+    .control-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+    
+    .view-buttons { display: flex; gap: 8px; }
+    .view-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; color: #666; }
+    .view-btn.active { background: #0066cc; color: white; border-color: #0066cc; }
+    
+    .chart-wrapper { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; overflow-x: auto; position: relative; }
+    svg { display: block; margin: 0 auto; }
+    
+    .tooltip { position: absolute; background: rgba(0,0,0,0.9); color: white; padding: 10px 14px; border-radius: 4px; font-size: 12px; pointer-events: none; z-index: 1000; white-space: nowrap; font-weight: 500; }
+    
+    .error { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px; }
+    
+    .stats { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-top: 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+    .stat-card { background: #f8f9fa; padding: 15px; border-radius: 6px; }
+    .stat-label { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 6px; }
+    .stat-value { font-size: 22px; font-weight: 600; color: #0066cc; }
+    .stat-unit { font-size: 12px; color: #999; }
+    
+    .legend { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+    .legend-item { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+    .legend-color { width: 16px; height: 16px; border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Half-Hourly Usage Flow Chart</h1>
+      <p style="color: #666;">Every 30-minute reading as individual bar - see consumption pattern throughout the day</p>
+    </header>
+
+    <div class="upload-section">
+      <label class="upload-label">Upload your meter readings CSV:</label>
+      <input type="file" id="csvFile" accept=".csv" />
+      <button onclick="loadData()">Load & Visualize</button>
+      <div id="error" style="display: none; margin-top: 10px;"></div>
+    </div>
+
+    <div id="content" style="display: none;">
+      <div class="controls">
+        <div class="control-row">
+          <div class="control-group">
+            <label>Meter:</label>
+            <select id="meterSelect" onchange="updateChart()">
+              <option value="">Loading...</option>
+            </select>
+          </div>
+          
+          <div class="control-group">
+            <label>View:</label>
+            <div class="view-buttons">
+              <button class="view-btn active" onclick="setTimeFrame('half-hour')">Half-hourly</button>
+              <button class="view-btn" onclick="setTimeFrame('morning')">Morning (6am-12pm)</button>
+              <button class="view-btn" onclick="setTimeFrame('afternoon')">Afternoon (12pm-6pm)</button>
+              <button class="view-btn" onclick="setTimeFrame('full-day')">Full Day</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-row">
+          <div class="control-group">
+            <label>Date:</label>
+            <select id="dateSelect" onchange="updateChart()">
+              <option value="">All Dates</option>
+            </select>
+          </div>
+
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="showValues" onchange="updateChart()" checked />
+              Show values
+            </label>
+          </div>
+
+          <div class="control-group">
+            <label>
+              <input type="checkbox" id="showAvgLine" onchange="updateChart()" />
+              Show average line
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: linear-gradient(to right, #1f77b4, #ff7f0e, #d62728, #2ca02c);"></div>
+          <span>Color gradient: Night → Morning → Afternoon → Evening</span>
+        </div>
+      </div>
+
+      <div class="chart-wrapper">
+        <svg id="chart" width="100%" height="400" style="min-width: 600px;"></svg>
+      </div>
+
+      <div class="stats">
+        <div class="stats-grid" id="statsGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip" style="display: none;"></div>
+
+  <script>
+    let allData = [];
+    let meterAnalysis = {};
+    let currentMeter = null;
+    let currentTimeFrame = 'half-hour';
+
+    function loadData() {
+      const file = document.getElementById('csvFile').files[0];
+      if (!file) {
+        showError('Please select a CSV file');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const csv = e.target.result;
+          const lines = csv.trim().split('\n');
+          
+          const headers = lines[0].split(',').map(h => h.trim());
+          const meterIdx = headers.indexOf('Meter Number');
+          const registerIdx = headers.indexOf('Register');
+          const dateIdx = headers.indexOf('Date');
+          const readingIdx = headers.indexOf('Reading');
+
+          if (meterIdx === -1 || registerIdx === -1 || dateIdx === -1 || readingIdx === -1) {
+            showError('CSV must have columns: Meter Number, Register, Date, Reading');
+            return;
+          }
+
+          allData = [];
+          for (let i = 1; i < lines.length; i++) {
+            if (!lines[i].trim()) continue;
+            const parts = lines[i].split(',');
+            if (parts.length >= readingIdx + 1) {
+              allData.push({
+                'Meter Number': parts[meterIdx]?.trim(),
+                'Register': parts[registerIdx]?.trim(),
+                'Date': parts[dateIdx]?.trim(),
+                'Reading': parts[readingIdx]?.trim()
+              });
+            }
+          }
+
+          if (allData.length === 0) {
+            showError('No valid data found in CSV');
+            return;
+          }
+
+          analyzeData();
+          populateMeterSelect();
+          populateDateSelect();
+          updateChart();
+          showContent();
+        } catch (error) {
+          showError('Error parsing CSV: ' + error.message);
+        }
+      };
+
+      reader.onerror = () => {
+        showError('Error reading file');
+      };
+
+      reader.readAsText(file);
+    }
+
+    function showError(msg) {
+      const errorDiv = document.getElementById('error');
+      errorDiv.textContent = msg;
+      errorDiv.style.display = 'block';
+    }
+
+    function analyzeData() {
+      const grouped = {};
+
+      allData.forEach(row => {
+        if (!row['Meter Number'] || !row['Register']) return;
+        const key = `${row['Meter Number']}-${row['Register']}`;
+        if (!grouped[key]) {
+          grouped[key] = { 
+            number: row['Meter Number'], 
+            register: row['Register'],
+            readings: []
+          };
+        }
+        const reading = parseFloat(row['Reading']);
+        if (!isNaN(reading)) {
+          grouped[key].readings.push({
+            date: row['Date'],
+            value: reading
+          });
+        }
+      });
+
+      Object.keys(grouped).forEach(key => {
+        const meter = grouped[key];
+        const readings = meter.readings.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        const usage = [];
+        for (let i = 1; i < readings.length; i++) {
+          const diff = readings[i].value - readings[i-1].value;
+          usage.push({
+            timestamp: readings[i].date,
+            usage: Math.max(0, diff),
+            value: readings[i].value
+          });
+        }
+
+        meterAnalysis[key] = {
+          number: meter.number,
+          register: meter.register,
+          unit: meter.register === 'Energy' ? 'W' : 'L',
+          originalUnit: meter.register === 'Energy' ? 'kWh' : 'kL',
+          usage: usage.map(u => ({
+            ...u,
+            displayUsage: meter.register === 'Energy' 
+              ? (u.usage / 0.5) * 1000  // Convert kWh to watts: (kWh / 0.5 hours) * 1000 = average watts
+              : u.usage * 1000  // Convert kL to litres
+          }))
+        };
+      });
+
+      currentMeter = Object.keys(meterAnalysis)[0];
+    }
+
+    function populateMeterSelect() {
+      const select = document.getElementById('meterSelect');
+      select.innerHTML = '';
+      Object.keys(meterAnalysis).forEach(key => {
+        const meter = meterAnalysis[key];
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = `${meter.register} - ${meter.number}`;
+        select.appendChild(option);
+      });
+      select.value = currentMeter;
+    }
+
+    function populateDateSelect() {
+      const meter = meterAnalysis[currentMeter];
+      if (!meter) return;
+
+      const dates = new Set();
+      meter.usage.forEach(u => {
+        const dateStr = u.timestamp.split(' ')[0];
+        dates.add(dateStr);
+      });
+
+      const select = document.getElementById('dateSelect');
+      const currentValue = select.value;
+      select.innerHTML = '<option value="">All Dates</option>';
+      
+      Array.from(dates).sort().forEach(date => {
+        const option = document.createElement('option');
+        option.value = date;
+        option.textContent = date;
+        select.appendChild(option);
+      });
+
+      select.value = currentValue;
+    }
+
+    function setTimeFrame(frame) {
+      currentTimeFrame = frame;
+      document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      updateChart();
+    }
+
+    function getTimeOfDay(hour) {
+      if (hour >= 0 && hour < 6) return 0; // Night (blue-ish)
+      if (hour >= 6 && hour < 12) return 1; // Morning (orange)
+      if (hour >= 12 && hour < 18) return 2; // Afternoon (red)
+      return 3; // Evening (green)
+    }
+
+    function getBarColor(hour) {
+      const colors = ['#1f77b4', '#ff7f0e', '#d62728', '#2ca02c'];
+      return colors[getTimeOfDay(hour)];
+    }
+
+    function filterDataByTimeFrame(usage) {
+      if (currentTimeFrame === 'half-hour') return usage;
+      
+      return usage.filter(u => {
+        const dateObj = new Date(u.timestamp);
+        const hour = dateObj.getHours();
+        
+        if (currentTimeFrame === 'morning') return hour >= 6 && hour < 12;
+        if (currentTimeFrame === 'afternoon') return hour >= 12 && hour < 18;
+        return true; // full-day
+      });
+    }
+
+    function filterDataByDate(usage) {
+      const selectedDate = document.getElementById('dateSelect').value;
+      if (!selectedDate) return usage;
+      
+      return usage.filter(u => u.timestamp.startsWith(selectedDate));
+    }
+
+    function updateChart() {
+      const meterKey = document.getElementById('meterSelect').value;
+      const meter = meterAnalysis[meterKey];
+      currentMeter = meterKey;
+
+      if (!meter || meter.usage.length === 0) return;
+
+      let filteredData = meter.usage;
+      filteredData = filterDataByDate(filteredData);
+      filteredData = filterDataByTimeFrame(filteredData);
+
+      if (filteredData.length === 0) {
+        showError('No data for selected filters');
+        return;
+      }
+
+      const showValues = document.getElementById('showValues').checked;
+      const showAvgLine = document.getElementById('showAvgLine').checked;
+
+      // Convert data for display
+      const displayData = filteredData.map(d => ({
+        ...d,
+        displayUsage: meter.register === 'Energy' 
+          ? (d.usage / 0.5) * 1000  // Convert kWh to watts: (kWh / 0.5 hours) * 1000
+          : d.usage * 1000  // Convert kL to litres
+      }));
+
+      // Find max value
+      let maxValue = Math.max(...displayData.map(d => d.displayUsage));
+
+      // SVG dimensions
+      const barWidth = Math.max(4, Math.min(12, 1000 / filteredData.length));
+      const barGap = 2;
+      const padding = { top: 50, right: 40, bottom: 60, left: 60 };
+      const chartWidth = filteredData.length * (barWidth + barGap) + padding.left + padding.right;
+      const chartHeight = 450;
+      const plotHeight = chartHeight - padding.top - padding.bottom;
+
+      // Create SVG
+      const svg = document.getElementById('chart');
+      svg.innerHTML = '';
+      svg.setAttribute('width', Math.max(1000, chartWidth));
+      svg.setAttribute('height', chartHeight);
+
+      // Helper to scale value
+      const scaleValue = (val) => (val / maxValue) * plotHeight;
+
+      // Y-axis
+      const yAxis = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const yTicks = 5;
+      for (let i = 0; i <= yTicks; i++) {
+        const y = padding.top + plotHeight - (plotHeight / yTicks) * i;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', padding.left - 5);
+        line.setAttribute('x2', padding.left);
+        line.setAttribute('y1', y);
+        line.setAttribute('y2', y);
+        line.setAttribute('stroke', '#ddd');
+        yAxis.appendChild(line);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.textContent = (maxValue * (i / yTicks)).toFixed(1);
+        text.setAttribute('x', padding.left - 10);
+        text.setAttribute('y', y + 4);
+        text.setAttribute('text-anchor', 'end');
+        text.setAttribute('font-size', '11px');
+        text.setAttribute('fill', '#666');
+        yAxis.appendChild(text);
+      }
+      svg.appendChild(yAxis);
+
+      // Grid lines
+      for (let i = 0; i <= yTicks; i++) {
+        const y = padding.top + plotHeight - (plotHeight / yTicks) * i;
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', padding.left);
+        line.setAttribute('x2', Math.max(1000, chartWidth) - padding.right);
+        line.setAttribute('y1', y);
+        line.setAttribute('y2', y);
+        line.setAttribute('stroke', '#f0f0f0');
+        line.setAttribute('stroke-dasharray', '2,2');
+        svg.appendChild(line);
+      }
+
+      // Bars
+      const baseY = padding.top + plotHeight;
+      displayData.forEach((d, i) => {
+        const dateObj = new Date(d.timestamp);
+        const hour = dateObj.getHours();
+        const minute = dateObj.getMinutes();
+        const x = padding.left + i * (barWidth + barGap);
+        const height = scaleValue(d.displayUsage);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x);
+        rect.setAttribute('y', baseY - height);
+        rect.setAttribute('width', barWidth);
+        rect.setAttribute('height', height);
+        rect.setAttribute('fill', getBarColor(hour));
+        rect.setAttribute('opacity', '0.8');
+        rect.setAttribute('stroke', '#fff');
+        rect.setAttribute('stroke-width', '0.5');
+        rect.setAttribute('cursor', 'pointer');
+
+        rect.addEventListener('mouseenter', (e) => {
+          const tooltip = document.getElementById('tooltip');
+          const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+          tooltip.textContent = `${timeStr}: ${d.displayUsage.toFixed(1)} ${meter.unit}`;
+          tooltip.style.display = 'block';
+          tooltip.style.left = (e.pageX + 10) + 'px';
+          tooltip.style.top = (e.pageY - 30) + 'px';
+        });
+
+        rect.addEventListener('mousemove', (e) => {
+          const tooltip = document.getElementById('tooltip');
+          tooltip.style.left = (e.pageX + 10) + 'px';
+          tooltip.style.top = (e.pageY - 30) + 'px';
+        });
+
+        rect.addEventListener('mouseleave', () => {
+          document.getElementById('tooltip').style.display = 'none';
+        });
+
+        svg.appendChild(rect);
+
+        // Value label
+        if (showValues && height > 8) {
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.textContent = d.displayUsage.toFixed(0);
+          text.setAttribute('x', x + barWidth / 2);
+          text.setAttribute('y', baseY - height - 2);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('font-size', '8px');
+          text.setAttribute('fill', '#333');
+          text.setAttribute('font-weight', 'bold');
+          text.setAttribute('pointer-events', 'none');
+          svg.appendChild(text);
+        }
+      });
+
+      // Average line
+      if (showAvgLine) {
+        const avgUsage = displayData.reduce((a, b) => a + b.displayUsage, 0) / displayData.length;
+        const avgY = baseY - scaleValue(avgUsage);
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', padding.left);
+        line.setAttribute('x2', Math.max(1000, chartWidth) - padding.right);
+        line.setAttribute('y1', avgY);
+        line.setAttribute('y2', avgY);
+        line.setAttribute('stroke', '#ff0000');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-dasharray', '5,5');
+        svg.appendChild(line);
+
+        const avgLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        avgLabel.textContent = `Avg: ${avgUsage.toFixed(0)} ${meter.unit}`;
+        avgLabel.setAttribute('x', Math.max(1000, chartWidth) - padding.right - 5);
+        avgLabel.setAttribute('y', avgY - 8);
+        avgLabel.setAttribute('text-anchor', 'end');
+        avgLabel.setAttribute('font-size', '12px');
+        avgLabel.setAttribute('fill', '#ff0000');
+        avgLabel.setAttribute('font-weight', 'bold');
+        svg.appendChild(avgLabel);
+      }
+
+      // X-axis
+      const xAxis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      xAxis.setAttribute('x1', padding.left);
+      xAxis.setAttribute('x2', Math.max(1000, chartWidth) - padding.right);
+      xAxis.setAttribute('y1', baseY);
+      xAxis.setAttribute('y2', baseY);
+      xAxis.setAttribute('stroke', '#333');
+      xAxis.setAttribute('stroke-width', '1');
+      svg.appendChild(xAxis);
+
+      // X-axis labels (every 12 intervals, or less if fewer bars)
+      const labelInterval = Math.max(1, Math.floor(filteredData.length / 12));
+      filteredData.forEach((d, i) => {
+        if (i % labelInterval === 0) {
+          const dateObj = new Date(d.timestamp);
+          const hour = dateObj.getHours();
+          const minute = dateObj.getMinutes();
+          const x = padding.left + i * (barWidth + barGap) + barWidth / 2;
+
+          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          text.textContent = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+          text.setAttribute('x', x);
+          text.setAttribute('y', baseY + 20);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('font-size', '11px');
+          text.setAttribute('fill', '#666');
+          svg.appendChild(text);
+        }
+      });
+
+      // Y-axis label
+      const yLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      yLabel.textContent = `Usage (${meter.unit})`;
+      yLabel.setAttribute('x', -chartHeight / 2);
+      yLabel.setAttribute('y', 15);
+      yLabel.setAttribute('text-anchor', 'middle');
+      yLabel.setAttribute('font-size', '12px');
+      yLabel.setAttribute('fill', '#333');
+      yLabel.setAttribute('transform', 'rotate(-90)');
+      svg.appendChild(yLabel);
+
+      // X-axis label
+      const xLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      xLabel.textContent = 'Time (Half-hourly intervals)';
+      xLabel.setAttribute('x', (padding.left + Math.max(1000, chartWidth) - padding.right) / 2);
+      xLabel.setAttribute('y', chartHeight - 5);
+      xLabel.setAttribute('text-anchor', 'middle');
+      xLabel.setAttribute('font-size', '12px');
+      xLabel.setAttribute('fill', '#333');
+      svg.appendChild(xLabel);
+
+      // Title
+      const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      const frameLabel = { 'half-hour': 'Half-hourly', 'morning': 'Morning (6am-12pm)', 'afternoon': 'Afternoon (12pm-6pm)', 'full-day': 'Full Day' };
+      title.textContent = `${meter.register} Usage - ${frameLabel[currentTimeFrame]}`;
+      title.setAttribute('x', (padding.left + Math.max(1000, chartWidth) - padding.right) / 2);
+      title.setAttribute('y', 25);
+      title.setAttribute('text-anchor', 'middle');
+      title.setAttribute('font-size', '14px');
+      title.setAttribute('font-weight', 'bold');
+      title.setAttribute('fill', '#333');
+      svg.appendChild(title);
+
+      // Update stats
+      updateStats(meter, filteredData);
+    }
+
+    function updateStats(meter, data) {
+      // Convert data for display
+      const displayData = data.map(d => ({
+        ...d,
+        displayUsage: meter.register === 'Energy' 
+          ? (d.usage / 0.5) * 1000  // Convert kWh to watts: (kWh / 0.5 hours) * 1000
+          : d.usage * 1000  // Convert kL to litres
+      }));
+
+      const totalUsage = displayData.reduce((a, b) => a + b.displayUsage, 0);
+      const avgUsage = totalUsage / displayData.length;
+      const maxUsage = Math.max(...displayData.map(d => d.displayUsage));
+      const minUsage = Math.min(...displayData.map(d => d.displayUsage));
+
+      const maxEntry = displayData.reduce((a, b) => a.displayUsage > b.displayUsage ? a : b);
+      const maxTime = new Date(maxEntry.timestamp);
+      const maxTimeStr = `${String(maxTime.getHours()).padStart(2, '0')}:${String(maxTime.getMinutes()).padStart(2, '0')}`;
+
+      const statsGrid = document.getElementById('statsGrid');
+      statsGrid.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Total Usage</div>
+          <div class="stat-value">${totalUsage.toFixed(0)}</div>
+          <div class="stat-unit">${meter.unit}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Average per Half-hour</div>
+          <div class="stat-value">${avgUsage.toFixed(0)}</div>
+          <div class="stat-unit">${meter.unit}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Peak Usage</div>
+          <div class="stat-value">${maxUsage.toFixed(0)}</div>
+          <div class="stat-unit">@ ${maxTimeStr}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Minimum Usage</div>
+          <div class="stat-value">${minUsage.toFixed(0)}</div>
+          <div class="stat-unit">${meter.unit}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Data Points</div>
+          <div class="stat-value">${data.length}</div>
+          <div class="stat-unit">half-hourly readings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Peak / Average Ratio</div>
+          <div class="stat-value">${(maxUsage / avgUsage).toFixed(1)}x</div>
+          <div class="stat-unit">variability</div>
+        </div>
+      `;
+    }
+
+    function showContent() {
+      document.getElementById('content').style.display = 'block';
+      document.getElementById('error').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
