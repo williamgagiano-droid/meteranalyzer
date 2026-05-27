@@ -3,198 +3,471 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Half-Hourly Meter Usage Chart</title>
+  <title>Meter Usage Analyzer</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #333; }
     .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-    header { margin-bottom: 24px; }
-    h1 { font-size: 26px; margin-bottom: 6px; }
-    .upload-section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #ddd; }
-    .upload-label { display: block; margin-bottom: 10px; font-weight: 500; }
-    input[type="file"] { padding: 8px; margin-bottom: 10px; }
-    button { background: #0066cc; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
-    button:hover { background: #0052a3; }
-    .controls { background: white; padding: 18px 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #ddd; }
-    .control-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
-    .control-row:last-child { margin-bottom: 0; }
-    .control-group { display: flex; gap: 8px; align-items: center; }
-    .control-group label { font-size: 13px; font-weight: 500; }
-    .control-group select { padding: 7px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
-    .view-buttons { display: flex; gap: 6px; }
-    .view-btn { padding: 7px 14px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; color: #555; }
-    .view-btn.active { background: #0066cc; color: white; border-color: #0066cc; }
-    .chart-wrapper { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; overflow-x: auto; }
+
+    /* Header */
+    .app-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 20px 28px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .app-header h1 { font-size: 22px; font-weight: 700; }
+    .app-header p { font-size: 13px; color: #aab; margin-top: 3px; }
+    .header-right { display: flex; gap: 10px; }
+
+    /* Cards */
+    .card { background: white; border-radius: 10px; border: 1px solid #e4e8ef; padding: 20px; margin-bottom: 16px; }
+    .card-title { font-size: 14px; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    /* Tabs */
+    .main-tabs { display: flex; gap: 4px; background: white; border-radius: 10px; border: 1px solid #e4e8ef; padding: 6px; margin-bottom: 16px; }
+    .main-tab { flex: 1; padding: 10px; border: none; background: none; border-radius: 7px; cursor: pointer; font-size: 13px; font-weight: 600; color: #888; transition: all 0.2s; }
+    .main-tab.active { background: #1a1a2e; color: white; }
+
+    /* Controls */
+    .controls-bar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    .ctrl-group { display: flex; flex-direction: column; gap: 4px; }
+    .ctrl-group label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; }
+    .ctrl-group select, .ctrl-group input { padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: white; min-width: 140px; }
+    .view-btns { display: flex; gap: 4px; }
+    .vbtn { padding: 8px 12px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; color: #666; }
+    .vbtn.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+
+    /* Chart */
+    .chart-wrap { overflow-x: auto; border-radius: 8px; background: #fafafa; border: 1px solid #eee; padding: 16px; }
     svg { display: block; }
-    .tooltip {
-      position: fixed; background: rgba(20,20,20,0.93); color: white;
-      padding: 10px 14px; border-radius: 6px; font-size: 12px;
-      pointer-events: none; z-index: 9999; white-space: nowrap;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3); line-height: 1.8;
-    }
-    .error { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
-    .stats { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-top: 16px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-    .stat-card { background: #f8f9fa; padding: 14px; border-radius: 6px; }
-    .stat-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-    .stat-value { font-size: 22px; font-weight: 700; color: #0066cc; }
-    .stat-unit { font-size: 11px; color: #aaa; margin-top: 2px; }
-    .legend { background: white; padding: 14px 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #ddd; display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
-    .legend-item { display: flex; gap: 8px; align-items: center; font-size: 13px; color: #444; }
-    .legend-dot { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
-    .legend-avg { width: 24px; height: 4px; background: rgba(0,0,0,0.25); border-radius: 2px; flex-shrink: 0; position: relative; }
-    .legend-avg::after { content: ''; position: absolute; top: -3px; left: 50%; transform: translateX(-50%); width: 2px; height: 10px; background: rgba(0,0,0,0.4); border-radius: 1px; }
+
+    /* Stats grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+    .stat-card { background: #f8f9fc; border-radius: 8px; padding: 14px; border-left: 4px solid #1a1a2e; }
+    .stat-card.red { border-left-color: #e74c3c; }
+    .stat-card.green { border-left-color: #27ae60; }
+    .stat-card.orange { border-left-color: #f39c12; }
+    .stat-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .stat-value { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .stat-unit { font-size: 11px; color: #bbb; margin-top: 2px; }
+
+    /* Flags */
+    .flags-list { display: flex; flex-direction: column; gap: 10px; }
+    .flag-item { background: #fff5f5; border: 1px solid #fcc; border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; }
+    .flag-item:hover { background: #ffe8e8; border-color: #e74c3c; }
+    .flag-item.warning { background: #fffbf0; border-color: #f6c90e; }
+    .flag-item.warning:hover { background: #fff3cc; }
+    .flag-left { display: flex; gap: 12px; align-items: flex-start; }
+    .flag-icon { font-size: 20px; }
+    .flag-title { font-size: 14px; font-weight: 700; color: #c0392b; }
+    .flag-item.warning .flag-title { color: #856404; }
+    .flag-desc { font-size: 12px; color: #777; margin-top: 3px; }
+    .flag-badge { background: #e74c3c; color: white; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .flag-item.warning .flag-badge { background: #f6c90e; color: #333; }
+
+    /* Peak times */
+    .peak-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .peak-card { border-radius: 8px; padding: 16px; }
+    .peak-card.energy { background: linear-gradient(135deg, #fff3cd, #ffe69c); border: 1px solid #ffc107; }
+    .peak-card.water { background: linear-gradient(135deg, #cce5ff, #b3d9ff); border: 1px solid #0066cc; }
+    .peak-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+    .peak-time-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.07); font-size: 13px; }
+    .peak-time-row:last-child { border-bottom: none; }
+    .peak-time-label { color: #555; }
+    .peak-time-value { font-weight: 700; color: #1a1a2e; }
+
+    /* Supabase */
+    .supabase-section { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .input-group label { font-size: 12px; font-weight: 600; color: #666; }
+    .input-group input { padding: 9px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; font-family: monospace; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .btn-primary { background: #1a1a2e; color: white; }
+    .btn-primary:hover { background: #2d2d4e; }
+    .btn-success { background: #27ae60; color: white; }
+    .btn-success:hover { background: #219a52; }
+    .btn-danger { background: #e74c3c; color: white; }
+    .status-msg { font-size: 13px; padding: 8px 12px; border-radius: 6px; margin-top: 10px; }
+    .status-msg.ok { background: #d4edda; color: #155724; }
+    .status-msg.err { background: #f8d7da; color: #721c24; }
+    .status-msg.info { background: #cce5ff; color: #004085; }
+
+    /* Day of week chart */
+    .dow-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 12px; }
+    .dow-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .dow-label { font-size: 12px; font-weight: 700; color: #555; }
+    .dow-bar-outer { width: 100%; background: #f0f0f0; border-radius: 6px; height: 120px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; position: relative; }
+    .dow-bar-avg { position: absolute; bottom: 0; left: 0; right: 0; border-radius: 6px; transition: height 0.5s; }
+    .dow-bar-actual { position: absolute; bottom: 0; left: 10%; width: 80%; border-radius: 4px; transition: height 0.5s; }
+    .dow-val { font-size: 11px; color: #777; text-align: center; }
+
+    /* Tooltip */
+    .tooltip { position: fixed; background: rgba(15,15,30,0.95); color: white; padding: 10px 14px; border-radius: 8px; font-size: 12px; pointer-events: none; z-index: 9999; white-space: nowrap; box-shadow: 0 6px 20px rgba(0,0,0,0.3); line-height: 1.9; }
+
+    /* Legend */
+    .legend { display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 14px; }
+    .legend-item { display: flex; gap: 7px; align-items: center; font-size: 12px; color: #555; }
+    .ldot { width: 13px; height: 13px; border-radius: 3px; }
+
+    /* Upload */
+    .upload-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+    .file-input-wrap { flex: 1; }
+    .file-input-wrap input { width: 100%; padding: 9px; border: 2px dashed #ccc; border-radius: 8px; background: #fafafa; font-size: 13px; }
+    .file-input-wrap input:hover { border-color: #1a1a2e; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Half-Hourly Usage Flow Chart</h1>
-      <p style="color:#777; font-size:14px;">Each bar = one 30-min interval · Transparent overlay = historical average for that time slot</p>
-    </header>
+<div class="container">
 
-    <div class="upload-section">
-      <label class="upload-label">Upload your meter readings CSV:</label>
-      <input type="file" id="csvFile" accept=".csv" />
-      <button onclick="loadData()">Load & Visualize</button>
-      <div id="error" style="display:none; margin-top:10px;" class="error"></div>
+  <div class="app-header">
+    <div>
+      <h1>⚡💧 Meter Usage Analyzer</h1>
+      <p>Half-hourly energy & water consumption · anomaly detection · historical insights</p>
     </div>
+    <div class="header-right">
+      <div id="dataSourceBadge" style="background:rgba(255,255,255,0.1); padding:8px 14px; border-radius:8px; font-size:12px; color:#ccc;">No data loaded</div>
+    </div>
+  </div>
 
-    <div id="content" style="display:none;">
-      <div class="controls">
-        <div class="control-row">
-          <div class="control-group">
-            <label>Meter:</label>
-            <select id="meterSelect" onchange="updateChart()"></select>
-          </div>
-          <div class="control-group">
-            <label>View:</label>
-            <div class="view-buttons">
-              <button class="view-btn active" onclick="setTimeFrame('half-hour',this)">Half-hourly</button>
-              <button class="view-btn" onclick="setTimeFrame('morning',this)">Morning (6am–12pm)</button>
-              <button class="view-btn" onclick="setTimeFrame('afternoon',this)">Afternoon (12pm–6pm)</button>
-              <button class="view-btn" onclick="setTimeFrame('full-day',this)">Full Day</button>
-            </div>
-          </div>
+  <!-- Upload + Supabase load -->
+  <div class="card">
+    <div class="card-title">📂 Load Data</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; flex-wrap:wrap;">
+      <div>
+        <div style="font-size:13px; font-weight:600; margin-bottom:10px;">Upload CSV File</div>
+        <div class="upload-row">
+          <div class="file-input-wrap"><input type="file" id="csvFile" accept=".csv" /></div>
+          <button class="btn btn-primary" onclick="loadCSV()">Load CSV</button>
         </div>
-        <div class="control-row">
-          <div class="control-group">
-            <label>Date:</label>
-            <select id="dateSelect" onchange="updateChart()">
-              <option value="">All Dates</option>
-            </select>
+        <div id="csvStatus"></div>
+      </div>
+      <div>
+        <div style="font-size:13px; font-weight:600; margin-bottom:10px;">Load from Supabase</div>
+        <div style="display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;">
+          <div class="input-group" style="flex:1; margin:0;">
+            <label>Supabase URL</label>
+            <input type="text" id="sbUrl" placeholder="https://xxx.supabase.co" />
           </div>
-          <div class="control-group">
-            <label><input type="checkbox" id="showValues" onchange="updateChart()" checked /> Values</label>
+          <div class="input-group" style="flex:1; margin:0;">
+            <label>Anon Key</label>
+            <input type="password" id="sbKey" placeholder="eyJ..." />
           </div>
-          <div class="control-group">
-            <label><input type="checkbox" id="showAvgLine" onchange="updateChart()" /> Global avg line</label>
-          </div>
-          <div class="control-group">
-            <label><input type="checkbox" id="showSlotAvg" onchange="updateChart()" checked /> Slot avg overlay</label>
-          </div>
+          <button class="btn btn-success" onclick="loadFromSupabase()">Load DB</button>
         </div>
-      </div>
-
-      <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#1f77b4;"></div> Night (00–06)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ff7f0e;"></div> Morning (06–12)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#d62728;"></div> Afternoon (12–18)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#2ca02c;"></div> Evening (18–24)</div>
-        <div class="legend-item">
-          <div style="width:18px; height:18px; border-radius:3px; background:rgba(0,0,0,0.18); border:2px dashed rgba(0,0,0,0.35); flex-shrink:0;"></div>
-          Slot historical avg
-        </div>
-      </div>
-
-      <div class="chart-wrapper">
-        <svg id="chart"></svg>
-      </div>
-
-      <div class="stats">
-        <div class="stats-grid" id="statsGrid"></div>
+        <div id="sbStatus"></div>
       </div>
     </div>
   </div>
 
-  <div class="tooltip" id="tooltip" style="display:none;"></div>
+  <!-- Main content (hidden until data loaded) -->
+  <div id="mainContent" style="display:none;">
 
-  <script>
-    let allData = [], meterAnalysis = {}, currentMeter = null, currentTimeFrame = 'half-hour';
+    <!-- Upload to Supabase -->
+    <div class="card" id="uploadCard" style="display:none;">
+      <div class="card-title">☁️ Save to Supabase</div>
+      <div style="font-size:13px; color:#777; margin-bottom:12px;">Save your CSV data to Supabase so you never need to upload a file again.</div>
+      <div style="display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;">
+        <div class="input-group" style="flex:1; margin:0;">
+          <label>Supabase URL</label>
+          <input type="text" id="sbUrlUpload" placeholder="https://xxx.supabase.co" />
+        </div>
+        <div class="input-group" style="flex:1; margin:0;">
+          <label>Anon Key</label>
+          <input type="password" id="sbKeyUpload" placeholder="eyJ..." />
+        </div>
+        <button class="btn btn-success" onclick="uploadToSupabase()">Upload Data</button>
+      </div>
+      <div id="uploadStatus"></div>
+      <div style="margin-top:12px; background:#f8f9fc; border-radius:8px; padding:12px; font-size:12px; color:#777;">
+        <strong>Setup:</strong> Create a table in Supabase called <code>meter_readings</code> with columns:
+        <code>meter_number</code> (text), <code>register</code> (text), <code>reading_date</code> (timestamp), <code>reading_value</code> (float8)
+      </div>
+    </div>
 
-    function loadData() {
-      const file = document.getElementById('csvFile').files[0];
-      if (!file) { showError('Please select a CSV file'); return; }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const lines = e.target.result.trim().split('\n');
-          const headers = lines[0].split(',').map(h => h.trim());
-          const mI = headers.indexOf('Meter Number'), rI = headers.indexOf('Register'),
-                dI = headers.indexOf('Date'), vI = headers.indexOf('Reading');
-          if ([mI,rI,dI,vI].includes(-1)) { showError('CSV needs: Meter Number, Register, Date, Reading'); return; }
-          allData = [];
-          for (let i = 1; i < lines.length; i++) {
-            if (!lines[i].trim()) continue;
-            const p = lines[i].split(',');
-            allData.push({ 'Meter Number': p[mI]?.trim(), 'Register': p[rI]?.trim(), 'Date': p[dI]?.trim(), 'Reading': p[vI]?.trim() });
-          }
-          if (!allData.length) { showError('No valid data found'); return; }
-          analyzeData();
-          populateMeterSelect();
-          populateDateSelect();
-          updateChart();
-          document.getElementById('content').style.display = 'block';
-          document.getElementById('error').style.display = 'none';
-        } catch(err) { showError('Parse error: ' + err.message); }
-      };
-      reader.readAsText(file);
+    <!-- Main tabs -->
+    <div class="main-tabs">
+      <button class="main-tab active" onclick="switchTab('chart',this)">📊 Chart</button>
+      <button class="main-tab" onclick="switchTab('dow',this)">📅 Day of Week</button>
+      <button class="main-tab" onclick="switchTab('peaks',this)">⏰ Peak Times</button>
+      <button class="main-tab" onclick="switchTab('flags',this)">🚨 Anomalies <span id="flagCount" style="background:#e74c3c;color:white;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;"></span></button>
+    </div>
+
+    <!-- CHART TAB -->
+    <div id="tab-chart">
+      <div class="card" style="padding:14px 20px;">
+        <div class="controls-bar">
+          <div class="ctrl-group">
+            <label>Meter</label>
+            <select id="meterSelect" onchange="refreshAll()"></select>
+          </div>
+          <div class="ctrl-group">
+            <label>View</label>
+            <div class="view-btns">
+              <button class="vbtn active" onclick="setFrame('half-hour',this)">Half-hourly</button>
+              <button class="vbtn" onclick="setFrame('morning',this)">Morning</button>
+              <button class="vbtn" onclick="setFrame('afternoon',this)">Afternoon</button>
+              <button class="vbtn" onclick="setFrame('full-day',this)">Full Day</button>
+            </div>
+          </div>
+          <div class="ctrl-group">
+            <label>Date</label>
+            <select id="dateSelect" onchange="refreshAll()"><option value="">All Dates</option></select>
+          </div>
+          <div class="ctrl-group">
+            <label>Day of Week</label>
+            <select id="dowFilter" onchange="refreshAll()">
+              <option value="">All Days</option>
+              <option value="0">Sunday</option>
+              <option value="1">Monday</option>
+              <option value="2">Tuesday</option>
+              <option value="3">Wednesday</option>
+              <option value="4">Thursday</option>
+              <option value="5">Friday</option>
+              <option value="6">Saturday</option>
+            </select>
+          </div>
+          <div class="ctrl-group" style="justify-content:flex-end; margin-top:18px;">
+            <label style="display:flex;gap:6px;align-items:center;cursor:pointer;"><input type="checkbox" id="showValues" onchange="refreshAll()" checked> Values</label>
+            <label style="display:flex;gap:6px;align-items:center;cursor:pointer;margin-top:4px;"><input type="checkbox" id="showSlotAvg" onchange="refreshAll()" checked> Slot avg</label>
+            <label style="display:flex;gap:6px;align-items:center;cursor:pointer;margin-top:4px;"><input type="checkbox" id="showGlobalAvg" onchange="refreshAll()"> Global avg</label>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="ldot" style="background:#1f77b4"></div>Night 00–06</div>
+          <div class="legend-item"><div class="ldot" style="background:#ff7f0e"></div>Morning 06–12</div>
+          <div class="legend-item"><div class="ldot" style="background:#d62728"></div>Afternoon 12–18</div>
+          <div class="legend-item"><div class="ldot" style="background:#2ca02c"></div>Evening 18–24</div>
+          <div class="legend-item"><div class="ldot" style="background:rgba(0,0,0,0.15);border:2px dashed #888;"></div>Slot avg</div>
+          <div class="legend-item"><div class="ldot" style="background:#e74c3c;"></div>Above avg marker</div>
+          <div class="legend-item"><div class="ldot" style="background:#27ae60;"></div>Below avg marker</div>
+        </div>
+      </div>
+      <div class="card" style="padding:16px;">
+        <div class="chart-wrap"><svg id="chart"></svg></div>
+      </div>
+      <div class="card"><div class="stats-grid" id="statsGrid"></div></div>
+    </div>
+
+    <!-- DAY OF WEEK TAB -->
+    <div id="tab-dow" style="display:none;">
+      <div class="card">
+        <div class="card-title">📅 Usage by Day of Week</div>
+        <div class="controls-bar">
+          <div class="ctrl-group">
+            <label>Meter</label>
+            <select id="dowMeterSelect" onchange="renderDOW()"></select>
+          </div>
+        </div>
+        <div id="dowContent"></div>
+      </div>
+    </div>
+
+    <!-- PEAK TIMES TAB -->
+    <div id="tab-peaks" style="display:none;">
+      <div class="card">
+        <div class="card-title">⏰ Historical Peak Usage Times</div>
+        <div id="peakContent"></div>
+      </div>
+    </div>
+
+    <!-- ANOMALIES TAB -->
+    <div id="tab-flags" style="display:none;">
+      <div class="card">
+        <div class="card-title">🚨 Anomaly Detection</div>
+        <p style="font-size:13px;color:#777;margin-bottom:16px;">Readings flagged as abnormally high based on historical slot averages. May indicate a faulty meter, leaking tap, or unexpected load.</p>
+        <div class="flags-list" id="flagsList"></div>
+      </div>
+    </div>
+
+  </div><!-- end mainContent -->
+</div><!-- end container -->
+
+<div class="tooltip" id="tooltip" style="display:none;"></div>
+
+<script>
+  // ─── State ───────────────────────────────────────────────────────
+  let meterAnalysis = {};
+  let currentMeter = null;
+  let currentFrame = 'half-hour';
+  let currentTab = 'chart';
+  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const ANOMALY_THRESHOLD = 2.5; // flag if reading > 2.5x slot average
+
+  // ─── CSV Load ─────────────────────────────────────────────────────
+  function loadCSV() {
+    const file = document.getElementById('csvFile').files[0];
+    if (!file) { setStatus('csvStatus','Please select a file','err'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const rows = parseCSV(e.target.result);
+        if (!rows.length) { setStatus('csvStatus','No valid rows found','err'); return; }
+        processData(rows);
+        document.getElementById('uploadCard').style.display = 'block';
+        setStatus('csvStatus', `✓ Loaded ${rows.length} readings from file`, 'ok');
+        setDataBadge('CSV File');
+      } catch(err) { setStatus('csvStatus', 'Parse error: ' + err.message, 'err'); }
+    };
+    reader.readAsText(file);
+  }
+
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim());
+    const mI = headers.indexOf('Meter Number'), rI = headers.indexOf('Register'),
+          dI = headers.indexOf('Date'), vI = headers.indexOf('Reading');
+    if ([mI,rI,dI,vI].includes(-1)) throw new Error('Missing columns: Meter Number, Register, Date, Reading');
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      const p = lines[i].split(',');
+      rows.push({ meter: p[mI]?.trim(), register: p[rI]?.trim(), date: p[dI]?.trim(), reading: parseFloat(p[vI]) });
     }
+    return rows.filter(r => r.meter && !isNaN(r.reading));
+  }
 
-    function showError(msg) { const el = document.getElementById('error'); el.textContent = msg; el.style.display = 'block'; }
-
-    function analyzeData() {
-      const grouped = {};
-      allData.forEach(row => {
-        if (!row['Meter Number'] || !row['Register']) return;
-        const key = `${row['Meter Number']}-${row['Register']}`;
-        if (!grouped[key]) grouped[key] = { number: row['Meter Number'], register: row['Register'], readings: [] };
-        const val = parseFloat(row['Reading']);
-        if (!isNaN(val)) grouped[key].readings.push({ date: row['Date'], value: val });
+  // ─── Supabase Load ─────────────────────────────────────────────────
+  async function loadFromSupabase() {
+    const url = document.getElementById('sbUrl').value.trim();
+    const key = document.getElementById('sbKey').value.trim();
+    if (!url || !key) { setStatus('sbStatus','Enter URL and Key','err'); return; }
+    setStatus('sbStatus','Loading from Supabase...','info');
+    try {
+      const res = await fetch(`${url}/rest/v1/meter_readings?select=*&order=reading_date.asc&limit=5000`, {
+        headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
       });
-      meterAnalysis = {};
-      Object.keys(grouped).forEach(key => {
-        const meter = grouped[key];
-        const readings = meter.readings.sort((a,b) => new Date(a.date) - new Date(b.date));
-        const usage = [];
-        for (let i = 1; i < readings.length; i++) {
-          const diff = readings[i].value - readings[i-1].value;
-          usage.push({ timestamp: readings[i].date, usage: Math.max(0, diff) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+      const data = await res.json();
+      if (!data.length) { setStatus('sbStatus','No data found in meter_readings table','err'); return; }
+      const rows = data.map(r => ({ meter: r.meter_number, register: r.register, date: r.reading_date, reading: parseFloat(r.reading_value) }));
+      processData(rows);
+      setStatus('sbStatus', `✓ Loaded ${rows.length} readings from Supabase`, 'ok');
+      setDataBadge('Supabase');
+    } catch(err) { setStatus('sbStatus','Error: ' + err.message,'err'); }
+  }
+
+  // ─── Upload to Supabase ────────────────────────────────────────────
+  async function uploadToSupabase() {
+    const url = document.getElementById('sbUrlUpload').value.trim();
+    const key = document.getElementById('sbKeyUpload').value.trim();
+    if (!url || !key) { setStatus('uploadStatus','Enter Supabase URL and Key','err'); return; }
+    const allRows = [];
+    Object.values(meterAnalysis).forEach(m => {
+      m.rawReadings.forEach(r => {
+        allRows.push({ meter_number: m.number, register: m.register, reading_date: r.date, reading_value: r.value });
+      });
+    });
+    if (!allRows.length) { setStatus('uploadStatus','No data to upload','err'); return; }
+    setStatus('uploadStatus', `Uploading ${allRows.length} rows...`, 'info');
+    try {
+      // Upload in batches of 500
+      const batchSize = 500;
+      for (let i = 0; i < allRows.length; i += batchSize) {
+        const batch = allRows.slice(i, i + batchSize);
+        const res = await fetch(`${url}/rest/v1/meter_readings`, {
+          method: 'POST',
+          headers: { 'apikey': key, 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+          body: JSON.stringify(batch)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+      }
+      setStatus('uploadStatus', `✓ Successfully uploaded ${allRows.length} rows to Supabase!`, 'ok');
+    } catch(err) { setStatus('uploadStatus', 'Upload error: ' + err.message, 'err'); }
+  }
+
+  // ─── Process Data ─────────────────────────────────────────────────
+  function processData(rows) {
+    const grouped = {};
+    rows.forEach(r => {
+      const key = `${r.meter}-${r.register}`;
+      if (!grouped[key]) grouped[key] = { number: r.meter, register: r.register, readings: [] };
+      grouped[key].readings.push({ date: r.date, value: r.reading });
+    });
+
+    meterAnalysis = {};
+    Object.keys(grouped).forEach(key => {
+      const m = grouped[key];
+      const readings = m.readings.sort((a,b) => new Date(a.date) - new Date(b.date));
+      const usage = [];
+      for (let i = 1; i < readings.length; i++) {
+        const diff = readings[i].value - readings[i-1].value;
+        if (diff >= 0) {
+          const dt = new Date(readings[i].date);
+          usage.push({
+            timestamp: readings[i].date, usage: diff,
+            h: dt.getHours(), m: dt.getMinutes(),
+            dow: dt.getDay(), dateStr: readings[i].date.split(' ')[0],
+            val: m.register === 'Energy' ? (diff / 0.5) * 1000 : diff * 1000
+          });
         }
-        // Build slot averages: key = "HH:MM" across ALL dates
-        const slotBuckets = {};
-        usage.forEach(u => {
-          const dt = new Date(u.timestamp);
-          const slotKey = `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-          if (!slotBuckets[slotKey]) slotBuckets[slotKey] = [];
-          const converted = meter.register === 'Energy' ? (u.usage / 0.5) * 1000 : u.usage * 1000;
-          slotBuckets[slotKey].push(converted);
-        });
-        const slotAvg = {};
-        Object.keys(slotBuckets).forEach(k => {
-          slotAvg[k] = slotBuckets[k].reduce((a,b) => a+b, 0) / slotBuckets[k].length;
-        });
-        meterAnalysis[key] = {
-          number: meter.number, register: meter.register,
-          unit: meter.register === 'Energy' ? 'W' : 'L',
-          usage, slotAvg
-        };
-      });
-      currentMeter = Object.keys(meterAnalysis)[0];
-    }
+      }
 
-    function populateMeterSelect() {
-      const sel = document.getElementById('meterSelect');
+      // Slot averages (by HH:MM)
+      const slotBuckets = {};
+      usage.forEach(u => {
+        const k = `${String(u.h).padStart(2,'0')}:${String(u.m).padStart(2,'0')}`;
+        if (!slotBuckets[k]) slotBuckets[k] = [];
+        slotBuckets[k].push(u.val);
+      });
+      const slotAvg = {};
+      const slotStd = {};
+      Object.keys(slotBuckets).forEach(k => {
+        const vals = slotBuckets[k];
+        const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+        const std = Math.sqrt(vals.reduce((a,b)=>a+(b-avg)**2,0)/vals.length);
+        slotAvg[k] = avg;
+        slotStd[k] = std;
+      });
+
+      // DOW averages
+      const dowBuckets = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
+      const dowDateTotals = {};
+      usage.forEach(u => {
+        const dk = `${u.dow}-${u.dateStr}`;
+        if (!dowDateTotals[dk]) dowDateTotals[dk] = { dow: u.dow, total: 0 };
+        dowDateTotals[dk].total += u.val;
+      });
+      Object.values(dowDateTotals).forEach(d => dowBuckets[d.dow].push(d.total));
+      const dowAvg = {};
+      Object.keys(dowBuckets).forEach(d => {
+        const vals = dowBuckets[d];
+        dowAvg[d] = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+      });
+
+      // Anomalies
+      const anomalies = usage.filter(u => {
+        const k = `${String(u.h).padStart(2,'0')}:${String(u.m).padStart(2,'0')}`;
+        const avg = slotAvg[k] || 0;
+        return avg > 0 && u.val > avg * ANOMALY_THRESHOLD;
+      }).map(u => {
+        const k = `${String(u.h).padStart(2,'0')}:${String(u.m).padStart(2,'0')}`;
+        return { ...u, slotAvg: slotAvg[k], ratio: u.val / (slotAvg[k] || 1) };
+      });
+
+      // Peak times: find top 3 slots by average
+      const sortedSlots = Object.keys(slotAvg).sort((a,b) => slotAvg[b] - slotAvg[a]);
+      const peakSlots = sortedSlots.slice(0, 6);
+      const morningPeaks = peakSlots.filter(s => { const h = parseInt(s); return h >= 5 && h < 13; }).slice(0,3);
+      const afternoonPeaks = peakSlots.filter(s => { const h = parseInt(s); return h >= 12 && h < 20; }).slice(0,3);
+
+      meterAnalysis[key] = {
+        number: m.number, register: m.register,
+        unit: m.register === 'Energy' ? 'W' : 'L',
+        rawReadings: readings,
+        usage, slotAvg, slotStd, dowAvg, anomalies,
+        morningPeaks, afternoonPeaks, peakSlots
+      };
+    });
+
+    currentMeter = Object.keys(meterAnalysis)[0];
+    populateSelects();
+    document.getElementById('mainContent').style.display = 'block';
+    refreshAll();
+    renderDOW();
+    renderPeaks();
+    renderFlags();
+  }
+
+  // ─── Selects ──────────────────────────────────────────────────────
+  function populateSelects() {
+    ['meterSelect','dowMeterSelect'].forEach(id => {
+      const sel = document.getElementById(id);
       sel.innerHTML = '';
       Object.keys(meterAnalysis).forEach(key => {
         const m = meterAnalysis[key];
@@ -203,199 +476,353 @@
         sel.appendChild(opt);
       });
       sel.value = currentMeter;
+    });
+
+    const dates = new Set();
+    const meter = meterAnalysis[currentMeter];
+    if (meter) meter.usage.forEach(u => dates.add(u.dateStr));
+    const dsel = document.getElementById('dateSelect');
+    dsel.innerHTML = '<option value="">All Dates</option>';
+    [...dates].sort().forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; dsel.appendChild(o); });
+  }
+
+  // ─── Tabs ─────────────────────────────────────────────────────────
+  function switchTab(name, btn) {
+    currentTab = name;
+    ['chart','dow','peaks','flags'].forEach(t => document.getElementById('tab-'+t).style.display = t===name ? 'block' : 'none');
+    document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function setFrame(f, btn) {
+    currentFrame = f;
+    document.querySelectorAll('.vbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    refreshAll();
+  }
+
+  // ─── Refresh All ──────────────────────────────────────────────────
+  function refreshAll() {
+    renderChart();
+    renderStats();
+  }
+
+  // ─── Chart ────────────────────────────────────────────────────────
+  function renderChart() {
+    const meterKey = document.getElementById('meterSelect').value;
+    const meter = meterAnalysis[meterKey];
+    if (!meter) return;
+    currentMeter = meterKey;
+
+    const selDate = document.getElementById('dateSelect').value;
+    const dowFilter = document.getElementById('dowFilter').value;
+    const showValues = document.getElementById('showValues').checked;
+    const showSlotAvg = document.getElementById('showSlotAvg').checked;
+    const showGlobalAvg = document.getElementById('showGlobalAvg').checked;
+
+    let data = meter.usage;
+    if (selDate) data = data.filter(u => u.dateStr === selDate);
+    if (dowFilter !== '') data = data.filter(u => u.dow === parseInt(dowFilter));
+    if (currentFrame === 'morning') data = data.filter(u => u.h >= 6 && u.h < 12);
+    else if (currentFrame === 'afternoon') data = data.filter(u => u.h >= 12 && u.h < 18);
+    if (!data.length) return;
+
+    const maxVal = Math.max(...data.map(d => Math.max(d.val, meter.slotAvg[`${String(d.h).padStart(2,'0')}:${String(d.m).padStart(2,'0')}`]||0)));
+    const avgVal = data.reduce((s,d)=>s+d.val,0)/data.length;
+
+    const barW = Math.max(35, Math.floor(1500 / data.length));
+    const gap = 4;
+    const pad = { top: 55, right: 60, bottom: 75, left: 65 };
+    const chartW = data.length * (barW + gap) + pad.left + pad.right;
+    const chartH = 460;
+    const plotH = chartH - pad.top - pad.bottom;
+    const baseY = pad.top + plotH;
+    const scaleY = v => Math.max(0, (v / maxVal) * plotH);
+
+    const svg = document.getElementById('chart');
+    svg.innerHTML = '';
+    svg.setAttribute('width', chartW);
+    svg.setAttribute('height', chartH);
+
+    const ns = 'http://www.w3.org/2000/svg';
+    const mk = (tag, attrs, text) => {
+      const e = document.createElementNS(ns, tag);
+      Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k,v));
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    // Grid
+    for (let i = 0; i <= 5; i++) {
+      const y = pad.top + plotH - (plotH/5)*i;
+      svg.appendChild(mk('line',{x1:pad.left,x2:chartW-pad.right,y1:y,y2:y,stroke:'#ececec','stroke-dasharray':'3,3'}));
+      svg.appendChild(mk('text',{x:pad.left-9,y:y+4,'text-anchor':'end','font-size':'11',fill:'#999'},(maxVal*i/5).toFixed(0)));
     }
+    svg.appendChild(mk('text',{transform:'rotate(-90)',x:-(pad.top+plotH/2),y:16,'text-anchor':'middle','font-size':'12',fill:'#555','font-weight':'600'},`Usage (${meter.unit})`));
 
-    function populateDateSelect() {
-      const meter = meterAnalysis[currentMeter];
-      if (!meter) return;
-      const dates = [...new Set(meter.usage.map(u => u.timestamp.split(' ')[0]))].sort();
-      const sel = document.getElementById('dateSelect');
-      sel.innerHTML = '<option value="">All Dates</option>';
-      dates.forEach(d => { const opt = document.createElement('option'); opt.value = d; opt.textContent = d; sel.appendChild(opt); });
-    }
+    // Bars
+    data.forEach((d, i) => {
+      const x = pad.left + i * (barW + gap);
+      const barH = Math.max(1, scaleY(d.val));
+      const slotKey = `${String(d.h).padStart(2,'0')}:${String(d.m).padStart(2,'0')}`;
+      const avgH = scaleY(meter.slotAvg[slotKey]||0);
+      const isAbove = d.val > (meter.slotAvg[slotKey]||0);
+      const isAnomaly = meter.anomalies.find(a => a.timestamp === d.timestamp);
+      const color = isAnomaly ? '#8B0000' : getBarColor(d.h);
 
-    function setTimeFrame(frame, btn) {
-      currentTimeFrame = frame;
-      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      updateChart();
-    }
+      // Main bar
+      svg.appendChild(mk('rect',{x,y:baseY-barH,width:barW,height:barH,fill:color,opacity:isAnomaly?'1':'0.82',rx:'2',stroke:isAnomaly?'#ff0000':'#fff','stroke-width':isAnomaly?'2':'1'}));
 
-    function getBarColor(hour) {
-      if (hour < 6) return '#1f77b4';
-      if (hour < 12) return '#ff7f0e';
-      if (hour < 18) return '#d62728';
-      return '#2ca02c';
-    }
-
-    function hexToRgba(hex, alpha) {
-      const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
-      return `rgba(${r},${g},${b},${alpha})`;
-    }
-
-    function updateChart() {
-      const meterKey = document.getElementById('meterSelect').value;
-      const meter = meterAnalysis[meterKey];
-      if (!meter) return;
-      currentMeter = meterKey;
-
-      const selectedDate = document.getElementById('dateSelect').value;
-      const showValues = document.getElementById('showValues').checked;
-      const showAvgLine = document.getElementById('showAvgLine').checked;
-      const showSlotAvg = document.getElementById('showSlotAvg').checked;
-
-      let data = selectedDate ? meter.usage.filter(u => u.timestamp.startsWith(selectedDate)) : meter.usage;
-      if (currentTimeFrame === 'morning') data = data.filter(u => { const h = new Date(u.timestamp).getHours(); return h >= 6 && h < 12; });
-      else if (currentTimeFrame === 'afternoon') data = data.filter(u => { const h = new Date(u.timestamp).getHours(); return h >= 12 && h < 18; });
-      if (!data.length) { showError('No data for selected filters'); return; }
-
-      // Convert units
-      const display = data.map(d => {
-        const dt = new Date(d.timestamp);
-        const h = dt.getHours(), m = dt.getMinutes();
-        const slotKey = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-        const val = meter.register === 'Energy' ? (d.usage / 0.5) * 1000 : d.usage * 1000;
-        return { ...d, val, h, m, slotKey, slotAvgVal: meter.slotAvg[slotKey] || 0 };
-      });
-
-      const maxVal = Math.max(...display.map(d => Math.max(d.val, d.slotAvgVal)));
-      const avgVal = display.reduce((s,d) => s + d.val, 0) / display.length;
-
-      // Layout
-      const barW = Math.max(35, Math.floor(1500 / display.length));
-      const gap = 4;
-      const pad = { top: 55, right: 60, bottom: 75, left: 65 };
-      const chartW = display.length * (barW + gap) + pad.left + pad.right;
-      const chartH = 490;
-      const plotH = chartH - pad.top - pad.bottom;
-      const baseY = pad.top + plotH;
-      const scaleY = v => (v / maxVal) * plotH;
-
-      const svg = document.getElementById('chart');
-      svg.innerHTML = '';
-      svg.setAttribute('width', chartW);
-      svg.setAttribute('height', chartH);
-
-      const ns = 'http://www.w3.org/2000/svg';
-      const el = (tag, attrs, text) => {
-        const e = document.createElementNS(ns, tag);
-        Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k,v));
-        if (text !== undefined) e.textContent = text;
-        return e;
-      };
-
-      // Grid + Y axis ticks
-      const yTicks = 5;
-      for (let i = 0; i <= yTicks; i++) {
-        const y = pad.top + plotH - (plotH / yTicks) * i;
-        svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: y, y2: y, stroke: '#ececec', 'stroke-dasharray': '3,3' }));
-        svg.appendChild(el('line', { x1: pad.left - 5, x2: pad.left, y1: y, y2: y, stroke: '#bbb' }));
-        svg.appendChild(el('text', { x: pad.left - 9, y: y + 4, 'text-anchor': 'end', 'font-size': '11', fill: '#777' }, (maxVal * i / yTicks).toFixed(0)));
+      // Slot avg overlay
+      if (showSlotAvg && avgH > 0) {
+        svg.appendChild(mk('rect',{x,y:baseY-avgH,width:barW,height:avgH,fill:'none',stroke:'rgba(0,0,0,0.35)','stroke-width':'2','stroke-dasharray':'4,3',rx:'2'}));
+        svg.appendChild(mk('line',{x1:x,x2:x+barW,y1:baseY-avgH,y2:baseY-avgH,stroke:isAbove?'#c0392b':'#27ae60','stroke-width':'2.5'}));
+        const tx=x+barW/2, ty=baseY-avgH;
+        const tri=document.createElementNS(ns,'polygon');
+        tri.setAttribute('points',`${tx},${ty-5} ${tx-4},${ty+2} ${tx+4},${ty+2}`);
+        tri.setAttribute('fill',isAbove?'#c0392b':'#27ae60');
+        svg.appendChild(tri);
       }
 
-      // Y axis label
-      svg.appendChild(el('text', { transform: 'rotate(-90)', x: -(pad.top + plotH/2), y: 16, 'text-anchor': 'middle', 'font-size': '12', fill: '#555', 'font-weight': '600' }, `Usage (${meter.unit})`));
+      // Value
+      if (showValues && barH > 14) svg.appendChild(mk('text',{x:x+barW/2,y:baseY-barH-5,'text-anchor':'middle','font-size':'10',fill:'#222','font-weight':'700','pointer-events':'none'},d.val.toFixed(0)));
 
-      // Bars
-      display.forEach((d, i) => {
-        const x = pad.left + i * (barW + gap);
-        const barH = Math.max(1, scaleY(d.val));
-        const color = getBarColor(d.h);
-
-        // Main bar
-        svg.appendChild(el('rect', { x, y: baseY - barH, width: barW, height: barH, fill: color, opacity: '0.85', rx: '2', stroke: '#fff', 'stroke-width': '1' }));
-
-        // Slot average overlay
-        if (showSlotAvg && d.slotAvgVal > 0) {
-          const avgH = Math.max(1, scaleY(d.slotAvgVal));
-          const isAbove = d.slotAvgVal > d.val;
-          // Transparent overlay showing average height
-          svg.appendChild(el('rect', {
-            x, y: baseY - avgH, width: barW, height: avgH,
-            fill: isAbove ? 'rgba(0,0,0,0.0)' : 'rgba(0,0,0,0.0)',
-            stroke: 'rgba(0,0,0,0.45)', 'stroke-width': '2',
-            'stroke-dasharray': '4,3', rx: '2',
-            opacity: '1'
-          }));
-          // Horizontal average line across the bar
-          svg.appendChild(el('line', {
-            x1: x, x2: x + barW,
-            y1: baseY - avgH, y2: baseY - avgH,
-            stroke: isAbove ? '#c0392b' : '#27ae60',
-            'stroke-width': '2.5'
-          }));
-          // Small triangle marker at top of avg line
-          const tx = x + barW / 2, ty = baseY - avgH;
-          const tri = document.createElementNS(ns, 'polygon');
-          tri.setAttribute('points', `${tx},${ty-6} ${tx-4},${ty+1} ${tx+4},${ty+1}`);
-          tri.setAttribute('fill', isAbove ? '#c0392b' : '#27ae60');
-          svg.appendChild(tri);
-        }
-
-        // Value label on top of bar
-        if (showValues && barH > 14) {
-          svg.appendChild(el('text', { x: x + barW/2, y: baseY - barH - 5, 'text-anchor': 'middle', 'font-size': '10', fill: '#222', 'font-weight': '700', 'pointer-events': 'none' }, d.val.toFixed(0)));
-        }
-
-        // X-axis time label (rotated)
-        const timeStr = `${String(d.h).padStart(2,'0')}:${String(d.m).padStart(2,'0')}`;
-        const lx = x + barW / 2, ly = baseY + 14;
-        svg.appendChild(el('text', { x: lx, y: ly, 'text-anchor': 'end', 'font-size': '11', fill: '#444', 'font-weight': '500', transform: `rotate(-45,${lx},${ly})` }, timeStr));
-
-        // Tooltip hover target
-        const hitArea = el('rect', { x, y: pad.top, width: barW, height: plotH, fill: 'transparent', cursor: 'pointer' });
-        const above = d.slotAvgVal > d.val;
-        hitArea.addEventListener('mouseenter', (e) => {
-          const tip = document.getElementById('tooltip');
-          const diff = d.val - d.slotAvgVal;
-          const pct = d.slotAvgVal > 0 ? ((diff / d.slotAvgVal) * 100).toFixed(0) : 'N/A';
-          tip.innerHTML = `
-            <strong>${timeStr}</strong><br>
-            This reading: <strong>${d.val.toFixed(0)} ${meter.unit}</strong><br>
-            Slot average: <strong>${d.slotAvgVal.toFixed(0)} ${meter.unit}</strong><br>
-            ${diff >= 0 ? `▲ ${Math.abs(pct)}% above average` : `▼ ${Math.abs(pct)}% below average`}
-          `;
-          tip.style.display = 'block';
-          tip.style.left = (e.clientX + 14) + 'px';
-          tip.style.top = (e.clientY - 60) + 'px';
-        });
-        hitArea.addEventListener('mousemove', (e) => {
-          const tip = document.getElementById('tooltip');
-          tip.style.left = (e.clientX + 14) + 'px';
-          tip.style.top = (e.clientY - 60) + 'px';
-        });
-        hitArea.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display = 'none'; });
-        svg.appendChild(hitArea);
-      });
-
-      // X axis line
-      svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: baseY, y2: baseY, stroke: '#999', 'stroke-width': '1' }));
-
-      // Global avg line
-      if (showAvgLine) {
-        const avgY = baseY - scaleY(avgVal);
-        svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: avgY, y2: avgY, stroke: '#7b2fbe', 'stroke-width': '2', 'stroke-dasharray': '8,5' }));
-        svg.appendChild(el('text', { x: chartW - pad.right - 6, y: avgY - 7, 'text-anchor': 'end', 'font-size': '12', fill: '#7b2fbe', 'font-weight': '700' }, `Global avg: ${avgVal.toFixed(0)} ${meter.unit}`));
+      // Anomaly indicator
+      if (isAnomaly) {
+        svg.appendChild(mk('text',{x:x+barW/2,y:baseY-barH-16,'text-anchor':'middle','font-size':'14','pointer-events':'none'},'🚨'));
       }
 
-      // Chart title
-      const frameLabels = { 'half-hour': 'All Half-hourly Readings', morning: 'Morning (6am–12pm)', afternoon: 'Afternoon (12pm–6pm)', 'full-day': 'Full Day' };
-      svg.appendChild(el('text', { x: pad.left + (chartW - pad.left - pad.right)/2, y: 30, 'text-anchor': 'middle', 'font-size': '15', 'font-weight': 'bold', fill: '#222' },
-        `${meter.register} (${meter.unit}) — ${frameLabels[currentTimeFrame]}${selectedDate ? ' — ' + selectedDate : ''}`));
+      // Time label
+      const ts=`${String(d.h).padStart(2,'0')}:${String(d.m).padStart(2,'0')}`;
+      const lx=x+barW/2, ly=baseY+14;
+      svg.appendChild(mk('text',{x:lx,y:ly,'text-anchor':'end','font-size':'11',fill:'#444','font-weight':'500',transform:`rotate(-45,${lx},${ly})`},ts));
 
-      // Stats
-      const maxEntry = display.reduce((a,b) => a.val > b.val ? a : b);
-      const maxTimeStr = `${String(maxEntry.h).padStart(2,'0')}:${String(maxEntry.m).padStart(2,'0')}`;
-      const aboveAvgCount = display.filter(d => d.val > d.slotAvgVal).length;
-      document.getElementById('statsGrid').innerHTML = `
-        <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">${display.reduce((s,d)=>s+d.val,0).toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
-        <div class="stat-card"><div class="stat-label">Average / 30min</div><div class="stat-value">${avgVal.toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
-        <div class="stat-card"><div class="stat-label">Peak</div><div class="stat-value">${maxEntry.val.toFixed(0)}</div><div class="stat-unit">@ ${maxTimeStr}</div></div>
-        <div class="stat-card"><div class="stat-label">Minimum</div><div class="stat-value">${Math.min(...display.map(d=>d.val)).toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
-        <div class="stat-card"><div class="stat-label">Above Slot Avg</div><div class="stat-value" style="color:#c0392b">${aboveAvgCount}</div><div class="stat-unit">of ${display.length} slots</div></div>
-        <div class="stat-card"><div class="stat-label">Peak / Avg Ratio</div><div class="stat-value">${(maxEntry.val / avgVal).toFixed(1)}x</div><div class="stat-unit">variability</div></div>
-      `;
+      // Hover
+      const hit = mk('rect',{x,y:pad.top,width:barW,height:plotH,fill:'transparent',cursor:'pointer'});
+      hit.addEventListener('mouseenter',e=>{
+        const tip = document.getElementById('tooltip');
+        const avg = meter.slotAvg[slotKey]||0;
+        const diff = d.val - avg;
+        const pct = avg > 0 ? ((diff/avg)*100).toFixed(0) : 'N/A';
+        tip.innerHTML = `<strong>${ts} — ${d.dateStr} (${DAYS[d.dow]})</strong><br>
+          Reading: <strong>${d.val.toFixed(0)} ${meter.unit}</strong><br>
+          Slot avg: <strong>${avg.toFixed(0)} ${meter.unit}</strong><br>
+          ${diff>=0?`▲ ${Math.abs(pct)}% above avg`:`▼ ${Math.abs(pct)}% below avg`}
+          ${isAnomaly?'<br><span style="color:#ff6b6b">🚨 ANOMALY DETECTED</span>':''}`;
+        tip.style.display='block';
+        tip.style.left=(e.clientX+14)+'px';
+        tip.style.top=(e.clientY-70)+'px';
+      });
+      hit.addEventListener('mousemove',e=>{const t=document.getElementById('tooltip');t.style.left=(e.clientX+14)+'px';t.style.top=(e.clientY-70)+'px';});
+      hit.addEventListener('mouseleave',()=>{document.getElementById('tooltip').style.display='none';});
+      svg.appendChild(hit);
+    });
+
+    svg.appendChild(mk('line',{x1:pad.left,x2:chartW-pad.right,y1:baseY,y2:baseY,stroke:'#bbb','stroke-width':'1'}));
+
+    if (showGlobalAvg) {
+      const ay=baseY-scaleY(avgVal);
+      svg.appendChild(mk('line',{x1:pad.left,x2:chartW-pad.right,y1:ay,y2:ay,stroke:'#7b2fbe','stroke-width':'2','stroke-dasharray':'8,5'}));
+      svg.appendChild(mk('text',{x:chartW-pad.right-6,y:ay-7,'text-anchor':'end','font-size':'12',fill:'#7b2fbe','font-weight':'700'},`Global avg: ${avgVal.toFixed(0)} ${meter.unit}`));
     }
-  </script>
+
+    const frameLabels={'half-hour':'Half-hourly',morning:'Morning (6am–12pm)',afternoon:'Afternoon (12pm–6pm)','full-day':'Full Day'};
+    svg.appendChild(mk('text',{x:pad.left+(chartW-pad.left-pad.right)/2,y:30,'text-anchor':'middle','font-size':'14','font-weight':'bold',fill:'#1a1a2e'},
+      `${meter.register} (${meter.unit}) — ${frameLabels[currentFrame]}${selDate?' — '+selDate:''}`));
+  }
+
+  function renderStats() {
+    const meterKey = document.getElementById('meterSelect').value;
+    const meter = meterAnalysis[meterKey];
+    if (!meter) return;
+    const selDate = document.getElementById('dateSelect').value;
+    let data = meter.usage;
+    if (selDate) data = data.filter(u => u.dateStr === selDate);
+
+    const total = data.reduce((s,d)=>s+d.val,0);
+    const avg = total/data.length;
+    const max = data.reduce((a,b)=>a.val>b.val?a:b,{val:0});
+    const min = data.reduce((a,b)=>a.val<b.val?a:b,{val:Infinity});
+    const aboveCount = data.filter(d=>{ const k=`${String(d.h).padStart(2,'0')}:${String(d.m).padStart(2,'0')}`; return d.val>(meter.slotAvg[k]||0);}).length;
+    const maxTs = new Date(max.timestamp);
+
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">${total.toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
+      <div class="stat-card"><div class="stat-label">Avg / 30min</div><div class="stat-value">${avg.toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
+      <div class="stat-card red"><div class="stat-label">Peak</div><div class="stat-value">${max.val.toFixed(0)}</div><div class="stat-unit">@ ${String(maxTs.getHours()).padStart(2,'0')}:${String(maxTs.getMinutes()).padStart(2,'0')}</div></div>
+      <div class="stat-card green"><div class="stat-label">Minimum</div><div class="stat-value">${min.val === Infinity ? 0 : min.val.toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
+      <div class="stat-card orange"><div class="stat-label">Above Slot Avg</div><div class="stat-value">${aboveCount}</div><div class="stat-unit">of ${data.length} slots</div></div>
+      <div class="stat-card red"><div class="stat-label">Anomalies</div><div class="stat-value">${meter.anomalies.length}</div><div class="stat-unit">flagged readings</div></div>
+    `;
+  }
+
+  // ─── Day of Week ──────────────────────────────────────────────────
+  function renderDOW() {
+    const meterKey = document.getElementById('dowMeterSelect').value;
+    const meter = meterAnalysis[meterKey];
+    if (!meter) return;
+
+    // Actual usage per day per DOW
+    const dowActual = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
+    const dowDateTotals = {};
+    meter.usage.forEach(u => {
+      const dk = `${u.dow}-${u.dateStr}`;
+      if (!dowDateTotals[dk]) dowDateTotals[dk] = { dow: u.dow, total: 0 };
+      dowDateTotals[dk].total += u.val;
+    });
+    Object.values(dowDateTotals).forEach(d => dowActual[d.dow].push(d.total));
+
+    const maxAvg = Math.max(...Object.values(meter.dowAvg));
+
+    let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:16px;">`;
+    for (let d = 0; d < 7; d++) {
+      const avg = meter.dowAvg[d] || 0;
+      const vals = dowActual[d];
+      const actual = vals.length ? vals[vals.length-1] : 0; // most recent day
+      const pct = maxAvg > 0 ? (avg/maxAvg)*100 : 0;
+      const actualPct = maxAvg > 0 ? (actual/maxAvg)*100 : 0;
+      const isHigh = avg === Math.max(...Object.values(meter.dowAvg));
+      const isLow = avg === Math.min(...Object.values(meter.dowAvg).filter(v=>v>0));
+
+      html += `
+        <div style="text-align:center;">
+          <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:8px;">${DAYS[d].slice(0,3)}</div>
+          <div style="height:140px;background:#f0f0f0;border-radius:8px;position:relative;overflow:hidden;">
+            <!-- avg bar -->
+            <div style="position:absolute;bottom:0;left:0;right:0;height:${pct}%;background:${isHigh?'#e74c3c':isLow?'#27ae60':'#1f77b4'};opacity:0.35;border-radius:8px;"></div>
+            <!-- actual bar -->
+            <div style="position:absolute;bottom:0;left:15%;width:70%;height:${actualPct}%;background:${isHigh?'#e74c3c':isLow?'#27ae60':'#1f77b4'};border-radius:6px 6px 0 0;opacity:0.9;"></div>
+            ${isHigh?'<div style="position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:14px;">📈</div>':''}
+            ${isLow?'<div style="position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:14px;">✅</div>':''}
+          </div>
+          <div style="font-size:12px;color:#555;margin-top:6px;font-weight:600;">${avg.toFixed(0)}</div>
+          <div style="font-size:10px;color:#aaa;">${meter.unit} avg</div>
+          <div style="font-size:10px;color:#888;margin-top:2px;">${vals.length} day${vals.length!==1?'s':''}</div>
+        </div>`;
+    }
+    html += '</div>';
+    html += `<div style="margin-top:16px;font-size:12px;color:#888;display:flex;gap:16px;">
+      <span>🔵 Average usage per day &nbsp; ◾ Most recent day (darker)</span>
+      <span>📈 Highest average day &nbsp; ✅ Lowest average day</span>
+    </div>`;
+    document.getElementById('dowContent').innerHTML = html;
+  }
+
+  // ─── Peak Times ────────────────────────────────────────────────────
+  function renderPeaks() {
+    let html = '<div class="peak-cards">';
+    Object.keys(meterAnalysis).forEach(key => {
+      const m = meterAnalysis[key];
+      const isEnergy = m.register === 'Energy';
+      html += `<div class="peak-card ${isEnergy?'energy':'water'}">
+        <h3>${isEnergy?'⚡':'💧'} ${m.register} — Peak Usage Times</h3>`;
+
+      if (m.morningPeaks.length) {
+        html += `<div style="font-size:12px;font-weight:700;color:#666;margin:8px 0 4px;">Morning peaks:</div>`;
+        m.morningPeaks.forEach((slot,i) => {
+          html += `<div class="peak-time-row">
+            <span class="peak-time-label">#${i+1} at ${slot}</span>
+            <span class="peak-time-value">${m.slotAvg[slot].toFixed(0)} ${m.unit} avg</span>
+          </div>`;
+        });
+        const first = m.morningPeaks[0], last = m.morningPeaks[m.morningPeaks.length-1];
+        html += `<div style="background:rgba(0,0,0,0.06);border-radius:6px;padding:8px;margin-top:8px;font-size:12px;">
+          🕐 Your peak ${isEnergy?'electricity':'water'} usage is between <strong>${first}</strong> and <strong>${last}</strong> in the morning
+        </div>`;
+      }
+
+      if (m.afternoonPeaks.length) {
+        html += `<div style="font-size:12px;font-weight:700;color:#666;margin:12px 0 4px;">Afternoon/evening peaks:</div>`;
+        m.afternoonPeaks.forEach((slot,i) => {
+          html += `<div class="peak-time-row">
+            <span class="peak-time-label">#${i+1} at ${slot}</span>
+            <span class="peak-time-value">${m.slotAvg[slot].toFixed(0)} ${m.unit} avg</span>
+          </div>`;
+        });
+        const first = m.afternoonPeaks[0], last = m.afternoonPeaks[m.afternoonPeaks.length-1];
+        html += `<div style="background:rgba(0,0,0,0.06);border-radius:6px;padding:8px;margin-top:8px;font-size:12px;">
+          🕑 Your peak ${isEnergy?'electricity':'water'} usage is between <strong>${first}</strong> and <strong>${last}</strong> in the afternoon/evening
+        </div>`;
+      }
+
+      html += `</div>`;
+    });
+    html += '</div>';
+    document.getElementById('peakContent').innerHTML = html;
+  }
+
+  // ─── Flags / Anomalies ────────────────────────────────────────────
+  function renderFlags() {
+    let allFlags = [];
+    Object.keys(meterAnalysis).forEach(key => {
+      const m = meterAnalysis[key];
+      m.anomalies.forEach(a => allFlags.push({ ...a, register: m.register, unit: m.unit, key }));
+    });
+
+    // Update badge count
+    document.getElementById('flagCount').textContent = allFlags.length || '';
+
+    if (!allFlags.length) {
+      document.getElementById('flagsList').innerHTML = '<div style="text-align:center;padding:40px;color:#aaa;font-size:14px;">✅ No anomalies detected in your data</div>';
+      return;
+    }
+
+    allFlags.sort((a,b) => b.ratio - a.ratio);
+
+    const html = allFlags.map(f => {
+      const dt = new Date(f.timestamp);
+      const timeStr = `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+      const severity = f.ratio > 5 ? 'error' : 'warning';
+      const icon = f.ratio > 5 ? '🚨' : '⚠️';
+      const possibleCause = f.register === 'Energy'
+        ? (f.ratio > 5 ? 'Possible faulty meter or large unexpected load' : 'Unusual electrical spike — check HVAC, geysers or large appliances')
+        : (f.ratio > 5 ? 'Possible burst pipe or major leak' : 'Unusual water flow — check taps, irrigation or toilet running');
+
+      return `<div class="flag-item ${severity==='warning'?'warning':''}" onclick="goToReading('${f.key}','${f.dateStr}','${timeStr}')">
+        <div class="flag-left">
+          <span class="flag-icon">${icon}</span>
+          <div>
+            <div class="flag-title">${f.register}: ${f.val.toFixed(0)} ${f.unit} at ${timeStr} on ${f.dateStr} (${DAYS[f.dow]})</div>
+            <div class="flag-desc">${f.ratio.toFixed(1)}× above normal (avg: ${f.slotAvg.toFixed(0)} ${f.unit}) — ${possibleCause}</div>
+          </div>
+        </div>
+        <div class="flag-badge">${f.ratio.toFixed(1)}× avg →</div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('flagsList').innerHTML = html;
+  }
+
+  function goToReading(meterKey, dateStr, timeStr) {
+    // Switch to chart tab, filter to that date and meter
+    document.querySelectorAll('.main-tab')[0].click();
+    document.getElementById('meterSelect').value = meterKey;
+    document.getElementById('dateSelect').value = dateStr;
+    document.getElementById('dowFilter').value = '';
+    currentFrame = 'half-hour';
+    document.querySelectorAll('.vbtn').forEach((b,i) => b.classList.toggle('active', i===0));
+    refreshAll();
+    // Scroll to chart
+    document.getElementById('tab-chart').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────────
+  function getBarColor(h) {
+    if (h < 6) return '#1f77b4';
+    if (h < 12) return '#ff7f0e';
+    if (h < 18) return '#d62728';
+    return '#2ca02c';
+  }
+
+  function setStatus(id, msg, type) {
+    const el = document.getElementById(id);
+    el.innerHTML = `<div class="status-msg ${type}">${msg}</div>`;
+  }
+
+  function setDataBadge(source) {
+    document.getElementById('dataSourceBadge').innerHTML = `✓ Data from: <strong>${source}</strong>`;
+    document.getElementById('dataSourceBadge').style.background = 'rgba(39,174,96,0.3)';
+  }
+</script>
 </body>
 </html>
