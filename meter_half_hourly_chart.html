@@ -8,51 +8,59 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #333; line-height: 1.6; }
     .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-    header { margin-bottom: 30px; }
-    h1 { font-size: 28px; margin-bottom: 8px; }
-    .upload-section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
+    header { margin-bottom: 24px; }
+    h1 { font-size: 26px; margin-bottom: 6px; }
+    .upload-section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #ddd; }
     .upload-label { display: block; margin-bottom: 10px; font-weight: 500; }
     input[type="file"] { padding: 8px; margin-bottom: 10px; }
     button { background: #0066cc; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; }
     button:hover { background: #0052a3; }
-    .controls { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; }
-    .control-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 15px; }
-    .control-group { display: flex; gap: 10px; align-items: center; }
-    .control-group label { font-size: 13px; font-weight: 500; min-width: 80px; }
-    .control-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
-    .view-buttons { display: flex; gap: 8px; }
-    .view-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; color: #666; }
+    .controls { background: white; padding: 18px 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #ddd; }
+    .control-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    .control-row:last-child { margin-bottom: 0; }
+    .control-group { display: flex; gap: 8px; align-items: center; }
+    .control-group label { font-size: 13px; font-weight: 500; }
+    .control-group select { padding: 7px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+    .view-buttons { display: flex; gap: 6px; }
+    .view-btn { padding: 7px 14px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; color: #555; }
     .view-btn.active { background: #0066cc; color: white; border-color: #0066cc; }
-    .chart-wrapper { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; overflow-x: auto; position: relative; }
+    .chart-wrapper { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; overflow-x: auto; }
     svg { display: block; }
-    .tooltip { position: absolute; background: rgba(0,0,0,0.9); color: white; padding: 10px 14px; border-radius: 4px; font-size: 13px; pointer-events: none; z-index: 1000; white-space: nowrap; font-weight: 500; }
-    .error { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 20px; }
-    .stats { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-top: 20px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-    .stat-card { background: #f8f9fa; padding: 15px; border-radius: 6px; }
-    .stat-label { font-size: 12px; color: #666; text-transform: uppercase; margin-bottom: 6px; }
-    .stat-value { font-size: 22px; font-weight: 600; color: #0066cc; }
-    .stat-unit { font-size: 12px; color: #999; }
-    .legend { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
-    .legend-item { display: flex; gap: 10px; align-items: center; font-size: 13px; }
-    .legend-dot { width: 16px; height: 16px; border-radius: 3px; flex-shrink: 0; }
+    .tooltip {
+      position: fixed; background: rgba(20,20,20,0.93); color: white;
+      padding: 10px 14px; border-radius: 6px; font-size: 12px;
+      pointer-events: none; z-index: 9999; white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3); line-height: 1.8;
+    }
+    .error { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
+    .stats { background: white; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-top: 16px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+    .stat-card { background: #f8f9fa; padding: 14px; border-radius: 6px; }
+    .stat-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .stat-value { font-size: 22px; font-weight: 700; color: #0066cc; }
+    .stat-unit { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .legend { background: white; padding: 14px 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #ddd; display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+    .legend-item { display: flex; gap: 8px; align-items: center; font-size: 13px; color: #444; }
+    .legend-dot { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+    .legend-avg { width: 24px; height: 4px; background: rgba(0,0,0,0.25); border-radius: 2px; flex-shrink: 0; position: relative; }
+    .legend-avg::after { content: ''; position: absolute; top: -3px; left: 50%; transform: translateX(-50%); width: 2px; height: 10px; background: rgba(0,0,0,0.4); border-radius: 1px; }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
       <h1>Half-Hourly Usage Flow Chart</h1>
-      <p style="color: #666;">Every 30-minute reading as individual bar — scroll to see full day</p>
+      <p style="color:#777; font-size:14px;">Each bar = one 30-min interval · Transparent overlay = historical average for that time slot</p>
     </header>
 
     <div class="upload-section">
       <label class="upload-label">Upload your meter readings CSV:</label>
       <input type="file" id="csvFile" accept=".csv" />
       <button onclick="loadData()">Load & Visualize</button>
-      <div id="error" style="display: none; margin-top: 10px;"></div>
+      <div id="error" style="display:none; margin-top:10px;" class="error"></div>
     </div>
 
-    <div id="content" style="display: none;">
+    <div id="content" style="display:none;">
       <div class="controls">
         <div class="control-row">
           <div class="control-group">
@@ -62,10 +70,10 @@
           <div class="control-group">
             <label>View:</label>
             <div class="view-buttons">
-              <button class="view-btn active" onclick="setTimeFrame('half-hour', this)">Half-hourly</button>
-              <button class="view-btn" onclick="setTimeFrame('morning', this)">Morning (6am–12pm)</button>
-              <button class="view-btn" onclick="setTimeFrame('afternoon', this)">Afternoon (12pm–6pm)</button>
-              <button class="view-btn" onclick="setTimeFrame('full-day', this)">Full Day</button>
+              <button class="view-btn active" onclick="setTimeFrame('half-hour',this)">Half-hourly</button>
+              <button class="view-btn" onclick="setTimeFrame('morning',this)">Morning (6am–12pm)</button>
+              <button class="view-btn" onclick="setTimeFrame('afternoon',this)">Afternoon (12pm–6pm)</button>
+              <button class="view-btn" onclick="setTimeFrame('full-day',this)">Full Day</button>
             </div>
           </div>
         </div>
@@ -77,19 +85,26 @@
             </select>
           </div>
           <div class="control-group">
-            <label><input type="checkbox" id="showValues" onchange="updateChart()" checked /> Show values</label>
+            <label><input type="checkbox" id="showValues" onchange="updateChart()" checked /> Values</label>
           </div>
           <div class="control-group">
-            <label><input type="checkbox" id="showAvgLine" onchange="updateChart()" /> Show average line</label>
+            <label><input type="checkbox" id="showAvgLine" onchange="updateChart()" /> Global avg line</label>
+          </div>
+          <div class="control-group">
+            <label><input type="checkbox" id="showSlotAvg" onchange="updateChart()" checked /> Slot avg overlay</label>
           </div>
         </div>
       </div>
 
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#1f77b4;"></div> Night (00:00–06:00)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ff7f0e;"></div> Morning (06:00–12:00)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#d62728;"></div> Afternoon (12:00–18:00)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#2ca02c;"></div> Evening (18:00–24:00)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1f77b4;"></div> Night (00–06)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff7f0e;"></div> Morning (06–12)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#d62728;"></div> Afternoon (12–18)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2ca02c;"></div> Evening (18–24)</div>
+        <div class="legend-item">
+          <div style="width:18px; height:18px; border-radius:3px; background:rgba(0,0,0,0.18); border:2px dashed rgba(0,0,0,0.35); flex-shrink:0;"></div>
+          Slot historical avg
+        </div>
       </div>
 
       <div class="chart-wrapper">
@@ -115,23 +130,14 @@
         try {
           const lines = e.target.result.trim().split('\n');
           const headers = lines[0].split(',').map(h => h.trim());
-          const meterIdx = headers.indexOf('Meter Number');
-          const registerIdx = headers.indexOf('Register');
-          const dateIdx = headers.indexOf('Date');
-          const readingIdx = headers.indexOf('Reading');
-          if ([meterIdx, registerIdx, dateIdx, readingIdx].includes(-1)) {
-            showError('CSV must have: Meter Number, Register, Date, Reading'); return;
-          }
+          const mI = headers.indexOf('Meter Number'), rI = headers.indexOf('Register'),
+                dI = headers.indexOf('Date'), vI = headers.indexOf('Reading');
+          if ([mI,rI,dI,vI].includes(-1)) { showError('CSV needs: Meter Number, Register, Date, Reading'); return; }
           allData = [];
           for (let i = 1; i < lines.length; i++) {
             if (!lines[i].trim()) continue;
-            const parts = lines[i].split(',');
-            allData.push({
-              'Meter Number': parts[meterIdx]?.trim(),
-              'Register': parts[registerIdx]?.trim(),
-              'Date': parts[dateIdx]?.trim(),
-              'Reading': parts[readingIdx]?.trim()
-            });
+            const p = lines[i].split(',');
+            allData.push({ 'Meter Number': p[mI]?.trim(), 'Register': p[rI]?.trim(), 'Date': p[dI]?.trim(), 'Reading': p[vI]?.trim() });
           }
           if (!allData.length) { showError('No valid data found'); return; }
           analyzeData();
@@ -145,10 +151,7 @@
       reader.readAsText(file);
     }
 
-    function showError(msg) {
-      const el = document.getElementById('error');
-      el.textContent = msg; el.style.display = 'block';
-    }
+    function showError(msg) { const el = document.getElementById('error'); el.textContent = msg; el.style.display = 'block'; }
 
     function analyzeData() {
       const grouped = {};
@@ -159,21 +162,32 @@
         const val = parseFloat(row['Reading']);
         if (!isNaN(val)) grouped[key].readings.push({ date: row['Date'], value: val });
       });
-
       meterAnalysis = {};
       Object.keys(grouped).forEach(key => {
         const meter = grouped[key];
-        const readings = meter.readings.sort((a, b) => new Date(a.date) - new Date(b.date));
+        const readings = meter.readings.sort((a,b) => new Date(a.date) - new Date(b.date));
         const usage = [];
         for (let i = 1; i < readings.length; i++) {
           const diff = readings[i].value - readings[i-1].value;
           usage.push({ timestamp: readings[i].date, usage: Math.max(0, diff) });
         }
+        // Build slot averages: key = "HH:MM" across ALL dates
+        const slotBuckets = {};
+        usage.forEach(u => {
+          const dt = new Date(u.timestamp);
+          const slotKey = `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+          if (!slotBuckets[slotKey]) slotBuckets[slotKey] = [];
+          const converted = meter.register === 'Energy' ? (u.usage / 0.5) * 1000 : u.usage * 1000;
+          slotBuckets[slotKey].push(converted);
+        });
+        const slotAvg = {};
+        Object.keys(slotBuckets).forEach(k => {
+          slotAvg[k] = slotBuckets[k].reduce((a,b) => a+b, 0) / slotBuckets[k].length;
+        });
         meterAnalysis[key] = {
-          number: meter.number,
-          register: meter.register,
+          number: meter.number, register: meter.register,
           unit: meter.register === 'Energy' ? 'W' : 'L',
-          usage
+          usage, slotAvg
         };
       });
       currentMeter = Object.keys(meterAnalysis)[0];
@@ -185,8 +199,7 @@
       Object.keys(meterAnalysis).forEach(key => {
         const m = meterAnalysis[key];
         const opt = document.createElement('option');
-        opt.value = key;
-        opt.textContent = `${m.register} - ${m.number}`;
+        opt.value = key; opt.textContent = `${m.register} — ${m.number}`;
         sel.appendChild(opt);
       });
       sel.value = currentMeter;
@@ -198,11 +211,7 @@
       const dates = [...new Set(meter.usage.map(u => u.timestamp.split(' ')[0]))].sort();
       const sel = document.getElementById('dateSelect');
       sel.innerHTML = '<option value="">All Dates</option>';
-      dates.forEach(d => {
-        const opt = document.createElement('option');
-        opt.value = d; opt.textContent = d;
-        sel.appendChild(opt);
-      });
+      dates.forEach(d => { const opt = document.createElement('option'); opt.value = d; opt.textContent = d; sel.appendChild(opt); });
     }
 
     function setTimeFrame(frame, btn) {
@@ -219,6 +228,11 @@
       return '#2ca02c';
     }
 
+    function hexToRgba(hex, alpha) {
+      const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
     function updateChart() {
       const meterKey = document.getElementById('meterSelect').value;
       const meter = meterAnalysis[meterKey];
@@ -228,130 +242,157 @@
       const selectedDate = document.getElementById('dateSelect').value;
       const showValues = document.getElementById('showValues').checked;
       const showAvgLine = document.getElementById('showAvgLine').checked;
+      const showSlotAvg = document.getElementById('showSlotAvg').checked;
 
-      // Filter by date
       let data = selectedDate ? meter.usage.filter(u => u.timestamp.startsWith(selectedDate)) : meter.usage;
-
-      // Filter by time frame
       if (currentTimeFrame === 'morning') data = data.filter(u => { const h = new Date(u.timestamp).getHours(); return h >= 6 && h < 12; });
       else if (currentTimeFrame === 'afternoon') data = data.filter(u => { const h = new Date(u.timestamp).getHours(); return h >= 12 && h < 18; });
-
       if (!data.length) { showError('No data for selected filters'); return; }
 
       // Convert units
-      const display = data.map(d => ({
-        ...d,
-        val: meter.register === 'Energy' ? (d.usage / 0.5) * 1000 : d.usage * 1000
-      }));
+      const display = data.map(d => {
+        const dt = new Date(d.timestamp);
+        const h = dt.getHours(), m = dt.getMinutes();
+        const slotKey = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        const val = meter.register === 'Energy' ? (d.usage / 0.5) * 1000 : d.usage * 1000;
+        return { ...d, val, h, m, slotKey, slotAvgVal: meter.slotAvg[slotKey] || 0 };
+      });
 
-      const maxVal = Math.max(...display.map(d => d.val));
-      const avgVal = display.reduce((s, d) => s + d.val, 0) / display.length;
+      const maxVal = Math.max(...display.map(d => Math.max(d.val, d.slotAvgVal)));
+      const avgVal = display.reduce((s,d) => s + d.val, 0) / display.length;
 
-      // Sizing — each bar is minimum 35px wide, chart scrolls horizontally
+      // Layout
       const barW = Math.max(35, Math.floor(1500 / display.length));
       const gap = 4;
-      const pad = { top: 50, right: 60, bottom: 70, left: 65 };
+      const pad = { top: 55, right: 60, bottom: 75, left: 65 };
       const chartW = display.length * (barW + gap) + pad.left + pad.right;
-      const chartH = 480;
+      const chartH = 490;
       const plotH = chartH - pad.top - pad.bottom;
+      const baseY = pad.top + plotH;
+      const scaleY = v => (v / maxVal) * plotH;
 
       const svg = document.getElementById('chart');
       svg.innerHTML = '';
       svg.setAttribute('width', chartW);
       svg.setAttribute('height', chartH);
 
-      const scaleY = v => (v / maxVal) * plotH;
-      const baseY = pad.top + plotH;
       const ns = 'http://www.w3.org/2000/svg';
-      const el = (tag, attrs) => {
+      const el = (tag, attrs, text) => {
         const e = document.createElementNS(ns, tag);
-        Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k, v));
+        Object.entries(attrs).forEach(([k,v]) => e.setAttribute(k,v));
+        if (text !== undefined) e.textContent = text;
         return e;
       };
 
-      // Grid + Y axis
+      // Grid + Y axis ticks
       const yTicks = 5;
       for (let i = 0; i <= yTicks; i++) {
         const y = pad.top + plotH - (plotH / yTicks) * i;
-        const val = (maxVal * i / yTicks).toFixed(0);
-        svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: y, y2: y, stroke: '#e8e8e8', 'stroke-dasharray': '3,3' }));
-        svg.appendChild(el('line', { x1: pad.left - 5, x2: pad.left, y1: y, y2: y, stroke: '#999' }));
-        const t = el('text', { x: pad.left - 8, y: y + 4, 'text-anchor': 'end', 'font-size': '11', fill: '#666' });
-        t.textContent = val;
-        svg.appendChild(t);
+        svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: y, y2: y, stroke: '#ececec', 'stroke-dasharray': '3,3' }));
+        svg.appendChild(el('line', { x1: pad.left - 5, x2: pad.left, y1: y, y2: y, stroke: '#bbb' }));
+        svg.appendChild(el('text', { x: pad.left - 9, y: y + 4, 'text-anchor': 'end', 'font-size': '11', fill: '#777' }, (maxVal * i / yTicks).toFixed(0)));
       }
 
       // Y axis label
-      const yLabel = el('text', { transform: 'rotate(-90)', x: -(pad.top + plotH/2), y: 16, 'text-anchor': 'middle', 'font-size': '12', fill: '#555', 'font-weight': '600' });
-      yLabel.textContent = `Usage (${meter.unit})`;
-      svg.appendChild(yLabel);
+      svg.appendChild(el('text', { transform: 'rotate(-90)', x: -(pad.top + plotH/2), y: 16, 'text-anchor': 'middle', 'font-size': '12', fill: '#555', 'font-weight': '600' }, `Usage (${meter.unit})`));
 
       // Bars
       display.forEach((d, i) => {
-        const dt = new Date(d.timestamp);
-        const h = dt.getHours(), m = dt.getMinutes();
         const x = pad.left + i * (barW + gap);
         const barH = Math.max(1, scaleY(d.val));
+        const color = getBarColor(d.h);
 
-        const rect = el('rect', { x, y: baseY - barH, width: barW, height: barH, fill: getBarColor(h), opacity: '0.85', stroke: '#fff', 'stroke-width': '1', cursor: 'pointer', rx: '2' });
+        // Main bar
+        svg.appendChild(el('rect', { x, y: baseY - barH, width: barW, height: barH, fill: color, opacity: '0.85', rx: '2', stroke: '#fff', 'stroke-width': '1' }));
 
-        rect.addEventListener('mouseenter', (e) => {
-          const tip = document.getElementById('tooltip');
-          tip.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} — ${d.val.toFixed(0)} ${meter.unit}`;
-          tip.style.display = 'block';
-          tip.style.left = (e.pageX + 12) + 'px';
-          tip.style.top = (e.pageY - 36) + 'px';
-        });
-        rect.addEventListener('mousemove', (e) => {
-          const tip = document.getElementById('tooltip');
-          tip.style.left = (e.pageX + 12) + 'px';
-          tip.style.top = (e.pageY - 36) + 'px';
-        });
-        rect.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display = 'none'; });
-        svg.appendChild(rect);
-
-        // Value on top
-        if (showValues && barH > 12) {
-          const t = el('text', { x: x + barW/2, y: baseY - barH - 4, 'text-anchor': 'middle', 'font-size': '10', fill: '#333', 'font-weight': '700', 'pointer-events': 'none' });
-          t.textContent = d.val.toFixed(0);
-          svg.appendChild(t);
+        // Slot average overlay
+        if (showSlotAvg && d.slotAvgVal > 0) {
+          const avgH = Math.max(1, scaleY(d.slotAvgVal));
+          const isAbove = d.slotAvgVal > d.val;
+          // Transparent overlay showing average height
+          svg.appendChild(el('rect', {
+            x, y: baseY - avgH, width: barW, height: avgH,
+            fill: isAbove ? 'rgba(0,0,0,0.0)' : 'rgba(0,0,0,0.0)',
+            stroke: 'rgba(0,0,0,0.45)', 'stroke-width': '2',
+            'stroke-dasharray': '4,3', rx: '2',
+            opacity: '1'
+          }));
+          // Horizontal average line across the bar
+          svg.appendChild(el('line', {
+            x1: x, x2: x + barW,
+            y1: baseY - avgH, y2: baseY - avgH,
+            stroke: isAbove ? '#c0392b' : '#27ae60',
+            'stroke-width': '2.5'
+          }));
+          // Small triangle marker at top of avg line
+          const tx = x + barW / 2, ty = baseY - avgH;
+          const tri = document.createElementNS(ns, 'polygon');
+          tri.setAttribute('points', `${tx},${ty-6} ${tx-4},${ty+1} ${tx+4},${ty+1}`);
+          tri.setAttribute('fill', isAbove ? '#c0392b' : '#27ae60');
+          svg.appendChild(tri);
         }
 
-        // X label — every bar gets a label, rotated so they don't overlap
-        const timeStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-        const tl = el('text', { x: x + barW/2, y: baseY + 14, 'text-anchor': 'end', 'font-size': '11', fill: '#444', 'font-weight': '500', transform: `rotate(-45, ${x + barW/2}, ${baseY + 14})` });
-        tl.textContent = timeStr;
-        svg.appendChild(tl);
+        // Value label on top of bar
+        if (showValues && barH > 14) {
+          svg.appendChild(el('text', { x: x + barW/2, y: baseY - barH - 5, 'text-anchor': 'middle', 'font-size': '10', fill: '#222', 'font-weight': '700', 'pointer-events': 'none' }, d.val.toFixed(0)));
+        }
+
+        // X-axis time label (rotated)
+        const timeStr = `${String(d.h).padStart(2,'0')}:${String(d.m).padStart(2,'0')}`;
+        const lx = x + barW / 2, ly = baseY + 14;
+        svg.appendChild(el('text', { x: lx, y: ly, 'text-anchor': 'end', 'font-size': '11', fill: '#444', 'font-weight': '500', transform: `rotate(-45,${lx},${ly})` }, timeStr));
+
+        // Tooltip hover target
+        const hitArea = el('rect', { x, y: pad.top, width: barW, height: plotH, fill: 'transparent', cursor: 'pointer' });
+        const above = d.slotAvgVal > d.val;
+        hitArea.addEventListener('mouseenter', (e) => {
+          const tip = document.getElementById('tooltip');
+          const diff = d.val - d.slotAvgVal;
+          const pct = d.slotAvgVal > 0 ? ((diff / d.slotAvgVal) * 100).toFixed(0) : 'N/A';
+          tip.innerHTML = `
+            <strong>${timeStr}</strong><br>
+            This reading: <strong>${d.val.toFixed(0)} ${meter.unit}</strong><br>
+            Slot average: <strong>${d.slotAvgVal.toFixed(0)} ${meter.unit}</strong><br>
+            ${diff >= 0 ? `▲ ${Math.abs(pct)}% above average` : `▼ ${Math.abs(pct)}% below average`}
+          `;
+          tip.style.display = 'block';
+          tip.style.left = (e.clientX + 14) + 'px';
+          tip.style.top = (e.clientY - 60) + 'px';
+        });
+        hitArea.addEventListener('mousemove', (e) => {
+          const tip = document.getElementById('tooltip');
+          tip.style.left = (e.clientX + 14) + 'px';
+          tip.style.top = (e.clientY - 60) + 'px';
+        });
+        hitArea.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display = 'none'; });
+        svg.appendChild(hitArea);
       });
 
       // X axis line
-      svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: baseY, y2: baseY, stroke: '#333', 'stroke-width': '1' }));
+      svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: baseY, y2: baseY, stroke: '#999', 'stroke-width': '1' }));
 
-      // Average line
+      // Global avg line
       if (showAvgLine) {
         const avgY = baseY - scaleY(avgVal);
-        svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: avgY, y2: avgY, stroke: '#e63946', 'stroke-width': '2', 'stroke-dasharray': '6,4' }));
-        const al = el('text', { x: chartW - pad.right - 6, y: avgY - 6, 'text-anchor': 'end', 'font-size': '12', fill: '#e63946', 'font-weight': '700' });
-        al.textContent = `Avg: ${avgVal.toFixed(0)} ${meter.unit}`;
-        svg.appendChild(al);
+        svg.appendChild(el('line', { x1: pad.left, x2: chartW - pad.right, y1: avgY, y2: avgY, stroke: '#7b2fbe', 'stroke-width': '2', 'stroke-dasharray': '8,5' }));
+        svg.appendChild(el('text', { x: chartW - pad.right - 6, y: avgY - 7, 'text-anchor': 'end', 'font-size': '12', fill: '#7b2fbe', 'font-weight': '700' }, `Global avg: ${avgVal.toFixed(0)} ${meter.unit}`));
       }
 
       // Chart title
       const frameLabels = { 'half-hour': 'All Half-hourly Readings', morning: 'Morning (6am–12pm)', afternoon: 'Afternoon (12pm–6pm)', 'full-day': 'Full Day' };
-      const title = el('text', { x: pad.left + (chartW - pad.left - pad.right)/2, y: 28, 'text-anchor': 'middle', 'font-size': '15', 'font-weight': 'bold', fill: '#222' });
-      title.textContent = `${meter.register} (${meter.unit}) — ${frameLabels[currentTimeFrame]}${selectedDate ? ' — ' + selectedDate : ''}`;
-      svg.appendChild(title);
+      svg.appendChild(el('text', { x: pad.left + (chartW - pad.left - pad.right)/2, y: 30, 'text-anchor': 'middle', 'font-size': '15', 'font-weight': 'bold', fill: '#222' },
+        `${meter.register} (${meter.unit}) — ${frameLabels[currentTimeFrame]}${selectedDate ? ' — ' + selectedDate : ''}`));
 
       // Stats
       const maxEntry = display.reduce((a,b) => a.val > b.val ? a : b);
-      const maxTime = new Date(maxEntry.timestamp);
-      const maxTimeStr = `${String(maxTime.getHours()).padStart(2,'0')}:${String(maxTime.getMinutes()).padStart(2,'0')}`;
+      const maxTimeStr = `${String(maxEntry.h).padStart(2,'0')}:${String(maxEntry.m).padStart(2,'0')}`;
+      const aboveAvgCount = display.filter(d => d.val > d.slotAvgVal).length;
       document.getElementById('statsGrid').innerHTML = `
         <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value">${display.reduce((s,d)=>s+d.val,0).toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
         <div class="stat-card"><div class="stat-label">Average / 30min</div><div class="stat-value">${avgVal.toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
         <div class="stat-card"><div class="stat-label">Peak</div><div class="stat-value">${maxEntry.val.toFixed(0)}</div><div class="stat-unit">@ ${maxTimeStr}</div></div>
         <div class="stat-card"><div class="stat-label">Minimum</div><div class="stat-value">${Math.min(...display.map(d=>d.val)).toFixed(0)}</div><div class="stat-unit">${meter.unit}</div></div>
-        <div class="stat-card"><div class="stat-label">Readings</div><div class="stat-value">${display.length}</div><div class="stat-unit">half-hourly</div></div>
+        <div class="stat-card"><div class="stat-label">Above Slot Avg</div><div class="stat-value" style="color:#c0392b">${aboveAvgCount}</div><div class="stat-unit">of ${display.length} slots</div></div>
         <div class="stat-card"><div class="stat-label">Peak / Avg Ratio</div><div class="stat-value">${(maxEntry.val / avgVal).toFixed(1)}x</div><div class="stat-unit">variability</div></div>
       `;
     }
