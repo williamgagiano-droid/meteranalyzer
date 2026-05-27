@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meter Usage Analyzer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    h1 { 
+      font-size: 32px;
+      margin-bottom: 12px;
+      color: #333;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 16px;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    .features {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+      text-align: left;
+    }
+    .feature-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+    .feature-item:last-child {
+      margin-bottom: 0;
+    }
+    .feature-icon {
+      font-size: 20px;
+      min-width: 24px;
+    }
+    .cta-button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+    .footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      font-size: 13px;
+      color: #999;
+    }
+    .github-link {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .github-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚡💧 Meter Usage Analyzer</h1>
+    <p class="subtitle">
+      Visualize your energy and water consumption patterns with interactive half-hourly charts. Identify peak usage times and optimize your costs.
+    </p>
+
+    <div class="features">
+      <div class="feature-item">
+        <span class="feature-icon">📊</span>
+        <span><strong>Manhattan Charts:</strong> See every half-hour as an individual bar</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">⚡</span>
+        <span><strong>Watts & Litres:</strong> Consumption in real-world units</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🎯</span>
+        <span><strong>Filter Views:</strong> Half-hourly, morning, afternoon, or full day</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">📈</span>
+        <span><strong>Smart Stats:</strong> Peak usage, averages, and variability ratios</span>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🔄</span>
+        <span><strong>Instant Upload:</strong> Works entirely in your browser</span>
+      </div>
+    </div>
+
+    <button class="cta-button" onclick="window.location.href='meter_half_hourly_chart.html'">
+      Open Analyzer →
+    </button>
+
+    <div class="footer">
+      <p>
+        <a href="https://github.com/williamgagiano-droid/meteranalyzer" class="github-link" target="_blank">
+          View on GitHub
+        </a>
+        • No data is stored • All processing happens in your browser
+      </p>
+    </div>
+  </div>
+</body>
+</html>
